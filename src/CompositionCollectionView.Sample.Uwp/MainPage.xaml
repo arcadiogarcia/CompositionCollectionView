@@ -1,0 +1,49 @@
+<Page
+    x:Class="CompositionCollectionView.Sample.Uwp.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:labs="using:CommunityToolkit.Labs.WinUI"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <ScrollViewer>
+        <StackPanel Padding="24"
+                Spacing="16">
+            <TextBlock Text="CompositionCollectionView Samples"
+                       Style="{ThemeResource TitleTextBlockStyle}"/>
+
+            <!-- Basic Sample -->
+            <TextBlock Text="Basic Layout"
+                       Style="{ThemeResource SubtitleTextBlockStyle}"
+                       Margin="0,16,0,0"/>
+            <TextBlock Text="Displaying elements in a simple horizontal layout."
+                       Style="{ThemeResource BodyTextBlockStyle}"
+                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+            <Button x:Name="addButton"
+                    Content="Add element"
+                    Margin="0,8,0,0"/>
+            <labs:CompositionCollectionView x:Name="basicView"
+                                            Width="600"
+                                            Height="120"
+                                            HorizontalAlignment="Left"/>
+
+            <!-- Switch Layouts Sample -->
+            <TextBlock Text="Layout Transition"
+                       Style="{ThemeResource SubtitleTextBlockStyle}"
+                       Margin="0,16,0,0"/>
+            <TextBlock Text="Toggle between a linear and stacked layout with animated transitions."
+                       Style="{ThemeResource BodyTextBlockStyle}"
+                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+            <ToggleSwitch x:Name="layoutToggle"
+                          Header="Layout"
+                          OnContent="Stacked"
+                          OffContent="Linear"/>
+            <labs:CompositionCollectionView x:Name="switchView"
+                                            Width="600"
+                                            Height="200"
+                                            HorizontalAlignment="Left"/>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

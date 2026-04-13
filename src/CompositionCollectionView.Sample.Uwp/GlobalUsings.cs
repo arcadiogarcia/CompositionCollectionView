@@ -1,0 +1,16 @@
+global using System;
+global using System.Collections.Generic;
+global using System.Numerics;
+global using Windows.ApplicationModel;
+global using Windows.ApplicationModel.Activation;
+global using Windows.UI;
+global using Windows.UI.Composition;
+global using Windows.UI.Composition.Interactions;
+global using Windows.UI.Xaml;
+global using Windows.UI.Xaml.Controls;
+global using Windows.UI.Xaml.Hosting;
+global using Windows.UI.Xaml.Media;
+global using Windows.UI.Xaml.Navigation;
+global using Windows.UI.Xaml.Shapes;
+global using CommunityToolkit.Labs.WinUI;
+global using Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork;

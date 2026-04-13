@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "CompositionCollectionView.Sample.WinUI3 (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "CompositionCollectionView.Sample.WinUI3 (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
