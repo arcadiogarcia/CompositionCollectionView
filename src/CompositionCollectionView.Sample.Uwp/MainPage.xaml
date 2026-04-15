@@ -9,41 +9,55 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <ScrollViewer>
-        <StackPanel Padding="24"
-                Spacing="16">
+        <StackPanel Padding="24" Spacing="16">
             <TextBlock Text="CompositionCollectionView Samples"
                        Style="{ThemeResource TitleTextBlockStyle}"/>
 
-            <!-- Basic Sample -->
-            <TextBlock Text="Basic Layout"
+            <!-- Card Fan & Layout Transitions -->
+            <TextBlock Text="Card Fan &amp; Layout Transitions"
                        Style="{ThemeResource SubtitleTextBlockStyle}"
-                       Margin="0,16,0,0"/>
-            <TextBlock Text="Displaying elements in a simple horizontal layout."
+                       Margin="0,24,0,0"/>
+            <TextBlock Text="12 cards showcase four distinct layout algorithms with smooth animated transitions."
                        Style="{ThemeResource BodyTextBlockStyle}"
                        Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-            <Button x:Name="addButton"
-                    Content="Add element"
-                    Margin="0,8,0,0"/>
-            <labs:CompositionCollectionView x:Name="basicView"
-                                            Width="600"
-                                            Height="120"
-                                            HorizontalAlignment="Left"/>
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
+                <ComboBox x:Name="layoutSelector" SelectedIndex="0" Width="160">
+                    <ComboBoxItem Content="Fan"/>
+                    <ComboBoxItem Content="Grid"/>
+                    <ComboBoxItem Content="Spiral"/>
+                    <ComboBoxItem Content="Orbit"/>
+                </ComboBox>
+            </StackPanel>
+            <Border Background="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"
+                    CornerRadius="12">
+                <labs:CompositionCollectionView x:Name="cardFanView"
+                                                Width="700"
+                                                Height="350"
+                                                HorizontalAlignment="Left"/>
+            </Border>
 
-            <!-- Switch Layouts Sample -->
-            <TextBlock Text="Layout Transition"
+            <!-- Dynamic Gallery -->
+            <TextBlock Text="Dynamic Gallery"
                        Style="{ThemeResource SubtitleTextBlockStyle}"
-                       Margin="0,16,0,0"/>
-            <TextBlock Text="Toggle between a linear and stacked layout with animated transitions."
+                       Margin="0,24,0,0"/>
+            <TextBlock Text="Add and remove items with animated grid repositioning."
                        Style="{ThemeResource BodyTextBlockStyle}"
                        Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-            <ToggleSwitch x:Name="layoutToggle"
-                          Header="Layout"
-                          OnContent="Stacked"
-                          OffContent="Linear"/>
-            <labs:CompositionCollectionView x:Name="switchView"
-                                            Width="600"
-                                            Height="200"
-                                            HorizontalAlignment="Left"/>
+            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
+                <Button x:Name="addGalleryButton" Content="+ Add Item"/>
+                <Button x:Name="removeGalleryButton" Content="- Remove Item"/>
+                <TextBlock x:Name="galleryCountText"
+                           VerticalAlignment="Center"
+                           Margin="8,0,0,0"
+                           Style="{ThemeResource BodyTextBlockStyle}"/>
+            </StackPanel>
+            <Border Background="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"
+                    CornerRadius="12">
+                <labs:CompositionCollectionView x:Name="galleryView"
+                                                Width="620"
+                                                Height="320"
+                                                HorizontalAlignment="Left"/>
+            </Border>
         </StackPanel>
     </ScrollViewer>
 </Page>
