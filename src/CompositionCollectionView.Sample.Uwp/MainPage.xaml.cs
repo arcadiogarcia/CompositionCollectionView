@@ -26,7 +26,6 @@ public sealed partial class MainPage : Page
     {
         this.InitializeComponent();
         SetupCardFanSample();
-        SetupDynamicGallerySample();
     }
 
     private static FrameworkElement CreateCard(uint id)
@@ -83,6 +82,9 @@ public sealed partial class MainPage : Page
                     break;
                 case "Orbit" when current is not OrbitLayout:
                     current.TransitionTo(_ => new OrbitLayout(current));
+                    break;
+                case "Wave" when current is not WaveLayout:
+                    current.TransitionTo(_ => new WaveLayout(current));
                     break;
             }
         };
@@ -204,33 +206,53 @@ public sealed partial class MainPage : Page
 
     private class OrbitLayout : CompositionCollectionLayout<uint, object?>
     {
+        private const string OneHzNode = nameof(OneHzNode);
         private const float CenterX = 350f;
         private const float CenterY = 175f;
         private const float RadiusX = 260f;
         private const float RadiusY = 110f;
+        private const float OrbitSpeed = 0.05f;
 
         public OrbitLayout(Func<uint, FrameworkElement> factory) : base(factory) { }
         public OrbitLayout(CompositionCollectionLayout<uint, object?> source) : base(source) { }
 
+        protected override void OnActivated()
+        {
+            var node = AnimatableNodes.GetOrCreateScalarNode(OneHzNode, 0);
+            int iterations = 1000;
+            var anim = Compositor.CreateScalarKeyFrameAnimation();
+            anim.Duration = TimeSpan.FromMilliseconds(1000 * iterations);
+            anim.InsertKeyFrame(0, 0);
+            anim.InsertKeyFrame(1, 2f * Pi * iterations, Compositor.CreateLinearEasingFunction());
+            anim.IterationBehavior = AnimationIterationBehavior.Forever;
+            node.Animate(anim);
+        }
+
         public override Vector3Node GetElementPositionNode(ElementReference<uint, object?> element)
         {
-            float angle = element.Id * (2f * Pi / CardCount) - Pi / 2f;
-            float x = CenterX + RadiusX * (float)Math.Cos(angle) - 40f;
-            float y = CenterY + RadiusY * (float)Math.Sin(angle) - 60f;
-            return new Vector3(x, y, 0);
+            var hzRef = AnimatableNodes.GetOrCreateScalarNode(OneHzNode, 0).Reference;
+            float baseAngle = element.Id * (2f * Pi / CardCount) - Pi / 2f;
+            var angle = hzRef * OrbitSpeed + baseAngle;
+            var x = (ScalarNode)(CenterX - 40f) + ExpressionFunctions.Cos(angle) * RadiusX;
+            var y = (ScalarNode)(CenterY - 60f) + ExpressionFunctions.Sin(angle) * RadiusY;
+            return ExpressionFunctions.Vector3(x, y, 0);
         }
 
         public override ScalarNode GetElementScaleNode(ElementReference<uint, object?> element)
         {
-            float angle = element.Id * (2f * Pi / CardCount) - Pi / 2f;
-            float depth = ((float)Math.Sin(angle) + 1f) / 2f;
+            var hzRef = AnimatableNodes.GetOrCreateScalarNode(OneHzNode, 0).Reference;
+            float baseAngle = element.Id * (2f * Pi / CardCount) - Pi / 2f;
+            var angle = hzRef * OrbitSpeed + baseAngle;
+            var depth = (ExpressionFunctions.Sin(angle) + 1f) / 2f;
             return 0.5f + 0.5f * depth;
         }
 
         public override ScalarNode GetElementOpacityNode(ElementReference<uint, object?> element)
         {
-            float angle = element.Id * (2f * Pi / CardCount) - Pi / 2f;
-            float depth = ((float)Math.Sin(angle) + 1f) / 2f;
+            var hzRef = AnimatableNodes.GetOrCreateScalarNode(OneHzNode, 0).Reference;
+            float baseAngle = element.Id * (2f * Pi / CardCount) - Pi / 2f;
+            var angle = hzRef * OrbitSpeed + baseAngle;
+            var depth = (ExpressionFunctions.Sin(angle) + 1f) / 2f;
             return 0.4f + 0.6f * depth;
         }
 
@@ -242,92 +264,68 @@ public sealed partial class MainPage : Page
 
         protected override void ConfigureElement(ElementReference<uint, object?> element)
         {
-            float angle = element.Id * (2f * Pi / CardCount) - Pi / 2f;
-            float depth = ((float)Math.Sin(angle) + 1f) / 2f;
-            element.Container.SetValue(Canvas.ZIndexProperty, (int)(depth * 100));
+            element.Container.SetValue(Canvas.ZIndexProperty, 50);
         }
     }
 
-    #endregion
-
-    #region Dynamic Gallery
-
-    private int _galleryCount = 8;
-    private readonly Dictionary<uint, object?> _galleryElements = new();
-
-    private void SetupDynamicGallerySample()
+    /// <summary>
+    /// Cards spread horizontally with Y positions continuously driven by a
+    /// compositor-thread sine wave (AnimatableNode). Each card has a phase
+    /// offset so the result is a travelling wave — no UI-thread ticking.
+    /// Inspired by the phone-bobbing OneHzNode pattern in CardGame.
+    /// </summary>
+    private class WaveLayout : CompositionCollectionLayout<uint, object?>
     {
-        for (uint i = 0; i < _galleryCount; i++)
-            _galleryElements[i] = null;
+        private const string OneHzNode = nameof(OneHzNode);
+        private const float Spacing = 55f;
+        private const float BaseY = 150f;
+        private const float Amplitude = 50f;
+        private const float Speed = 1f;          // multiplier on the 1 Hz clock
+        private const float PhaseStep = 0.55f;    // radians between adjacent cards
 
-        var layout = new GalleryGridLayout(CreateGalleryItem);
-        galleryView.SetLayout(layout);
-        galleryView.UpdateSource(_galleryElements);
-        UpdateGalleryCount();
+        public WaveLayout(Func<uint, FrameworkElement> factory) : base(factory) { }
+        public WaveLayout(CompositionCollectionLayout<uint, object?> source) : base(source) { }
 
-        addGalleryButton.Click += (s, e) =>
+        protected override void OnActivated()
         {
-            _galleryElements[(uint)_galleryCount++] = null;
-            galleryView.UpdateSource(_galleryElements);
-            UpdateGalleryCount();
-        };
-
-        removeGalleryButton.Click += (s, e) =>
-        {
-            if (_galleryCount > 0)
-            {
-                _galleryElements.Remove((uint)(--_galleryCount));
-                galleryView.UpdateSource(_galleryElements);
-                UpdateGalleryCount();
-            }
-        };
-    }
-
-    private void UpdateGalleryCount()
-    {
-        galleryCountText.Text = $"{_galleryCount} items";
-    }
-
-    private static FrameworkElement CreateGalleryItem(uint id)
-    {
-        var color = CardColors[id % CardColors.Length];
-        return new Border
-        {
-            Width = 80,
-            Height = 80,
-            CornerRadius = new CornerRadius(12),
-            Background = new SolidColorBrush(color),
-            Child = new TextBlock
-            {
-                Text = (id + 1).ToString(),
-                FontSize = 18,
-                FontWeight = Windows.UI.Text.FontWeights.SemiBold,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                VerticalAlignment = VerticalAlignment.Center,
-                Foreground = new SolidColorBrush(Colors.White)
-            }
-        };
-    }
-
-    private class GalleryGridLayout : CompositionCollectionLayout<uint, object?>
-    {
-        private const int Columns = 6;
-        private const float CellSize = 100f;
-        private const float Padding = 10f;
-
-        public GalleryGridLayout(Func<uint, FrameworkElement> factory) : base(factory) { }
+            // Create a node that linearly ramps 0 → 2π × N forever (the "1 Hz clock")
+            var node = AnimatableNodes.GetOrCreateScalarNode(OneHzNode, 0);
+            int iterations = 1000;
+            var anim = Compositor.CreateScalarKeyFrameAnimation();
+            anim.Duration = TimeSpan.FromMilliseconds(1000 * iterations);
+            anim.InsertKeyFrame(0, 0);
+            anim.InsertKeyFrame(1, 2f * Pi * iterations, Compositor.CreateLinearEasingFunction());
+            anim.IterationBehavior = AnimationIterationBehavior.Forever;
+            node.Animate(anim);
+        }
 
         public override Vector3Node GetElementPositionNode(ElementReference<uint, object?> element)
         {
-            int col = (int)(element.Id % Columns);
-            int row = (int)(element.Id / Columns);
-            return new Vector3(Padding + col * CellSize, Padding + row * CellSize, 0);
+            var hzRef = AnimatableNodes.GetOrCreateScalarNode(OneHzNode, 0).Reference;
+            float phase = element.Id * PhaseStep;
+            var x = (ScalarNode)(element.Id * Spacing + 10f);
+            var y = (ScalarNode)BaseY + ExpressionFunctions.Sin(hzRef * Speed + phase) * Amplitude;
+            return ExpressionFunctions.Vector3(x, y, 0);
         }
 
-        public override ScalarNode GetElementScaleNode(ElementReference<uint, object?> element) => 1f;
+        public override ScalarNode GetElementScaleNode(ElementReference<uint, object?> element) => 0.9f;
+
+        public override QuaternionNode GetElementOrientationNode(ElementReference<uint, object?> element)
+        {
+            var hzRef = AnimatableNodes.GetOrCreateScalarNode(OneHzNode, 0).Reference;
+            float phase = element.Id * PhaseStep;
+            // Tilt each card slightly in the direction of the wave
+            var tilt = ExpressionFunctions.Cos(hzRef * Speed + phase) * 0.15f;
+            return ExpressionFunctions.Quaternion(0, 0, tilt, 1);
+        }
 
         protected override ElementTransition GetElementTransitionEasingFunction(ElementReference<uint, object?> element) =>
-            new(300, Compositor.CreateCubicBezierEasingFunction(new Vector2(0.25f, 0.1f), new Vector2(0.25f, 1f)));
+            new(400, Compositor.CreateCubicBezierEasingFunction(new Vector2(0.2f, 0f), new Vector2(0f, 1f)));
+
+        protected override void ConfigureElement(ElementReference<uint, object?> element)
+        {
+            element.Container.SetValue(Canvas.ZIndexProperty, (int)element.Id);
+        }
     }
 
     #endregion

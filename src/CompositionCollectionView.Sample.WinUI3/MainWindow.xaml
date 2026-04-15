@@ -17,15 +17,17 @@
             <TextBlock Text="Card Fan &amp; Layout Transitions"
                        Style="{ThemeResource SubtitleTextBlockStyle}"
                        Margin="0,24,0,0"/>
-            <TextBlock Text="12 cards showcase four distinct layout algorithms with smooth animated transitions."
+            <TextBlock Text="12 cards showcase five distinct layout algorithms with smooth animated transitions. Wave uses a live compositor-driven sine node."
                        Style="{ThemeResource BodyTextBlockStyle}"
-                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
+                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                       TextWrapping="Wrap"/>
             <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
                 <ComboBox x:Name="layoutSelector" SelectedIndex="0" Width="160">
                     <ComboBoxItem Content="Fan"/>
                     <ComboBoxItem Content="Grid"/>
                     <ComboBoxItem Content="Spiral"/>
                     <ComboBoxItem Content="Orbit"/>
+                    <ComboBoxItem Content="Wave"/>
                 </ComboBox>
             </StackPanel>
             <Border Background="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"
@@ -33,29 +35,6 @@
                 <labs:CompositionCollectionView x:Name="cardFanView"
                                                 Width="700"
                                                 Height="350"
-                                                HorizontalAlignment="Left"/>
-            </Border>
-
-            <!-- Dynamic Gallery -->
-            <TextBlock Text="Dynamic Gallery"
-                       Style="{ThemeResource SubtitleTextBlockStyle}"
-                       Margin="0,24,0,0"/>
-            <TextBlock Text="Add and remove items with animated grid repositioning."
-                       Style="{ThemeResource BodyTextBlockStyle}"
-                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"/>
-            <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
-                <Button x:Name="addGalleryButton" Content="+ Add Item"/>
-                <Button x:Name="removeGalleryButton" Content="- Remove Item"/>
-                <TextBlock x:Name="galleryCountText"
-                           VerticalAlignment="Center"
-                           Margin="8,0,0,0"
-                           Style="{ThemeResource BodyTextBlockStyle}"/>
-            </StackPanel>
-            <Border Background="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"
-                    CornerRadius="12">
-                <labs:CompositionCollectionView x:Name="galleryView"
-                                                Width="620"
-                                                Height="320"
                                                 HorizontalAlignment="Left"/>
             </Border>
         </StackPanel>

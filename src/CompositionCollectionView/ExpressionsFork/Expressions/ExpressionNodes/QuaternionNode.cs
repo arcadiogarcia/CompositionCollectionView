@@ -182,6 +182,24 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
                         (Children[1] as QuaternionNode).Evaluate();
                 case ExpressionNodeType.QuaternionFromAxisAngle:
                     return Quaternion.CreateFromAxisAngle((Children[0] as Vector3Node).Evaluate(), (Children[1] as ScalarNode).Evaluate());
+                case ExpressionNodeType.Quaternion:
+                    return new Quaternion(
+                        (Children[0] as ScalarNode).Evaluate(),
+                        (Children[1] as ScalarNode).Evaluate(),
+                        (Children[2] as ScalarNode).Evaluate(),
+                        (Children[3] as ScalarNode).Evaluate());
+                case ExpressionNodeType.Slerp:
+                    return Quaternion.Slerp(
+                        (Children[0] as QuaternionNode).Evaluate(),
+                        (Children[1] as QuaternionNode).Evaluate(),
+                        (Children[2] as ScalarNode).Evaluate());
+                case ExpressionNodeType.Concatenate:
+                    return Quaternion.Concatenate(
+                        (Children[0] as QuaternionNode).Evaluate(),
+                        (Children[1] as QuaternionNode).Evaluate());
+                case ExpressionNodeType.Normalize:
+                    return Quaternion.Normalize(
+                        (Children[0] as QuaternionNode).Evaluate());
                 case ExpressionNodeType.Conditional:
                     return
                         (Children[0] as BooleanNode).Evaluate() ?
