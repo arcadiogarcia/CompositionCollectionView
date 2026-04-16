@@ -141,6 +141,7 @@ public sealed partial class MainPage : Page
         private const float CellH = 115f;
         private const float StartX = 168f;
         private const float StartY = 10f;
+        private const string HoverNode = "Hover";
 
         public CardGridLayout(Func<uint, FrameworkElement> factory) : base(factory) { }
         public CardGridLayout(CompositionCollectionLayout<uint, object?> source) : base(source) { }
@@ -149,10 +150,22 @@ public sealed partial class MainPage : Page
         {
             int col = (int)(element.Id % Columns);
             int row = (int)(element.Id / Columns);
-            return new Vector3(StartX + col * CellW, StartY + row * CellH, 0);
+            var hover = element.AnimatableNodes.GetOrCreateScalarNode(HoverNode, 0).Reference;
+            var y = (ScalarNode)(StartY + row * CellH) - hover * 12f;
+            return ExpressionFunctions.Vector3(StartX + col * CellW, y, 0);
         }
 
-        public override ScalarNode GetElementScaleNode(ElementReference<uint, object?> element) => 0.85f;
+        public override ScalarNode GetElementScaleNode(ElementReference<uint, object?> element)
+        {
+            var hover = element.AnimatableNodes.GetOrCreateScalarNode(HoverNode, 0).Reference;
+            return 0.85f + hover * 0.2f;
+        }
+
+        public override ScalarNode GetElementOpacityNode(ElementReference<uint, object?> element)
+        {
+            var hover = element.AnimatableNodes.GetOrCreateScalarNode(HoverNode, 0).Reference;
+            return 0.8f + hover * 0.2f;
+        }
 
         public override QuaternionNode GetElementOrientationNode(ElementReference<uint, object?> element)
             => Quaternion.Identity;
@@ -163,6 +176,23 @@ public sealed partial class MainPage : Page
         protected override void ConfigureElement(ElementReference<uint, object?> element)
         {
             element.Container.SetValue(Canvas.ZIndexProperty, 0);
+            var hoverNode = element.AnimatableNodes.GetOrCreateScalarNode(HoverNode, 0);
+            element.Container.PointerEntered += (s, e) =>
+            {
+                element.Container.SetValue(Canvas.ZIndexProperty, 100);
+                var anim = Compositor.CreateScalarKeyFrameAnimation();
+                anim.Duration = TimeSpan.FromMilliseconds(200);
+                anim.InsertKeyFrame(1, 1, Compositor.CreateCubicBezierEasingFunction(new Vector2(0.2f, 0f), new Vector2(0f, 1f)));
+                hoverNode.Animate(anim);
+            };
+            element.Container.PointerExited += (s, e) =>
+            {
+                element.Container.SetValue(Canvas.ZIndexProperty, 0);
+                var anim = Compositor.CreateScalarKeyFrameAnimation();
+                anim.Duration = TimeSpan.FromMilliseconds(300);
+                anim.InsertKeyFrame(1, 0, Compositor.CreateCubicBezierEasingFunction(new Vector2(0.2f, 0f), new Vector2(0f, 1f)));
+                hoverNode.Animate(anim);
+            };
         }
     }
 
@@ -207,17 +237,20 @@ public sealed partial class MainPage : Page
     private class OrbitLayout : CompositionCollectionLayout<uint, object?>
     {
         private const string OneHzNode = nameof(OneHzNode);
+        private const string TrackerScrollNode = "TrackerScroll";
         private const float CenterX = 350f;
         private const float CenterY = 175f;
         private const float RadiusX = 260f;
         private const float RadiusY = 110f;
         private const float OrbitSpeed = 0.05f;
+        private const float ScrollSensitivity = 0.003f;
 
         public OrbitLayout(Func<uint, FrameworkElement> factory) : base(factory) { }
         public OrbitLayout(CompositionCollectionLayout<uint, object?> source) : base(source) { }
 
         protected override void OnActivated()
         {
+            // Auto-rotation clock
             var node = AnimatableNodes.GetOrCreateScalarNode(OneHzNode, 0);
             int iterations = 1000;
             var anim = Compositor.CreateScalarKeyFrameAnimation();
@@ -226,13 +259,31 @@ public sealed partial class MainPage : Page
             anim.InsertKeyFrame(1, 2f * Pi * iterations, Compositor.CreateLinearEasingFunction());
             anim.IterationBehavior = AnimationIterationBehavior.Forever;
             node.Animate(anim);
+
+            // InteractionTracker for manual scroll/swipe rotation
+            var trackerBehavior = new InteractionTrackerBehavior<uint, object?>(RootPanel);
+            AddBehavior(trackerBehavior);
+            trackerBehavior.InteractionSource.PositionYSourceMode = InteractionSourceMode.Disabled;
+            trackerBehavior.InteractionSource.ScaleSourceMode = InteractionSourceMode.Disabled;
+
+            // Map tracker X position → angle offset via expression animation
+            var scrollNode = AnimatableNodes.GetOrCreateScalarNode(TrackerScrollNode, 0);
+            var expr = Compositor.CreateExpressionAnimation("tracker.Position.X * -" + ScrollSensitivity);
+            expr.SetReferenceParameter("tracker", trackerBehavior.Tracker);
+            scrollNode.Animate(expr);
+        }
+
+        private ScalarNode GetAngle(ElementReference<uint, object?> element)
+        {
+            var hzRef = AnimatableNodes.GetOrCreateScalarNode(OneHzNode, 0).Reference;
+            var scrollRef = AnimatableNodes.GetOrCreateScalarNode(TrackerScrollNode, 0).Reference;
+            float baseAngle = element.Id * (2f * Pi / CardCount) - Pi / 2f;
+            return hzRef * OrbitSpeed + scrollRef + baseAngle;
         }
 
         public override Vector3Node GetElementPositionNode(ElementReference<uint, object?> element)
         {
-            var hzRef = AnimatableNodes.GetOrCreateScalarNode(OneHzNode, 0).Reference;
-            float baseAngle = element.Id * (2f * Pi / CardCount) - Pi / 2f;
-            var angle = hzRef * OrbitSpeed + baseAngle;
+            var angle = GetAngle(element);
             var x = (ScalarNode)(CenterX - 40f) + ExpressionFunctions.Cos(angle) * RadiusX;
             var y = (ScalarNode)(CenterY - 60f) + ExpressionFunctions.Sin(angle) * RadiusY;
             return ExpressionFunctions.Vector3(x, y, 0);
@@ -240,19 +291,13 @@ public sealed partial class MainPage : Page
 
         public override ScalarNode GetElementScaleNode(ElementReference<uint, object?> element)
         {
-            var hzRef = AnimatableNodes.GetOrCreateScalarNode(OneHzNode, 0).Reference;
-            float baseAngle = element.Id * (2f * Pi / CardCount) - Pi / 2f;
-            var angle = hzRef * OrbitSpeed + baseAngle;
-            var depth = (ExpressionFunctions.Sin(angle) + 1f) / 2f;
+            var depth = (ExpressionFunctions.Sin(GetAngle(element)) + 1f) / 2f;
             return 0.5f + 0.5f * depth;
         }
 
         public override ScalarNode GetElementOpacityNode(ElementReference<uint, object?> element)
         {
-            var hzRef = AnimatableNodes.GetOrCreateScalarNode(OneHzNode, 0).Reference;
-            float baseAngle = element.Id * (2f * Pi / CardCount) - Pi / 2f;
-            var angle = hzRef * OrbitSpeed + baseAngle;
-            var depth = (ExpressionFunctions.Sin(angle) + 1f) / 2f;
+            var depth = (ExpressionFunctions.Sin(GetAngle(element)) + 1f) / 2f;
             return 0.4f + 0.6f * depth;
         }
 

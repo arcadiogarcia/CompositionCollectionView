@@ -17,12 +17,12 @@
             <TextBlock Text="Card Fan &amp; Layout Transitions"
                        Style="{ThemeResource SubtitleTextBlockStyle}"
                        Margin="0,24,0,0"/>
-            <TextBlock Text="12 cards showcase five distinct layout algorithms with smooth animated transitions. Wave uses a live compositor-driven sine node."
+            <TextBlock Text="12 cards showcase five distinct layout algorithms with smooth animated transitions. Pick a layout from the dropdown to see cards animate into position."
                        Style="{ThemeResource BodyTextBlockStyle}"
                        Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
                        TextWrapping="Wrap"/>
             <StackPanel Orientation="Horizontal" Spacing="12" Margin="0,8,0,0">
-                <ComboBox x:Name="layoutSelector" SelectedIndex="0" Width="160">
+                <ComboBox x:Name="layoutSelector" SelectedIndex="3" Width="160">
                     <ComboBoxItem Content="Fan"/>
                     <ComboBoxItem Content="Grid"/>
                     <ComboBoxItem Content="Spiral"/>
@@ -30,11 +30,18 @@
                     <ComboBoxItem Content="Wave"/>
                 </ComboBox>
             </StackPanel>
+            <TextBlock x:Name="layoutDescription"
+                       Style="{ThemeResource CaptionTextBlockStyle}"
+                       Foreground="{ThemeResource SystemControlForegroundBaseMediumBrush}"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,4"/>
             <Border Background="{ThemeResource SystemControlBackgroundChromeMediumLowBrush}"
-                    CornerRadius="12">
+                    CornerRadius="12"
+                    ManipulationMode="TranslateX,System">
                 <labs:CompositionCollectionView x:Name="cardFanView"
                                                 Width="700"
                                                 Height="350"
+                                                ManipulationMode="TranslateX,System"
                                                 HorizontalAlignment="Left"/>
             </Border>
         </StackPanel>
