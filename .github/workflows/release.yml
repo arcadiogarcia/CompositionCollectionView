@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   release:
-    runs-on: windows-2025
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -19,13 +19,20 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-        with:
-          vs-version: '[18.0,)'
-
       - name: Setup NuGet
         uses: nuget/setup-nuget@v2
+
+      - name: Find MSBuild & VS paths
+        id: vs
+        shell: pwsh
+        run: |
+          $vswhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsPath = & $vswhere -latest -requires Microsoft.Component.MSBuild -property installationPath
+          $msbuild = & $vswhere -latest -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
+          Write-Host "VS Installation: $vsPath"
+          Write-Host "MSBuild: $msbuild"
+          "MSBUILD=$msbuild" >> $env:GITHUB_OUTPUT
+          "VS_PATH=$vsPath" >> $env:GITHUB_OUTPUT
 
       - name: Extract version from tag
         id: version
@@ -39,19 +46,18 @@ jobs:
         shell: pwsh
         run: |
           nuget restore src/CompositionCollectionView/CompositionCollectionView.csproj
-          msbuild src/CompositionCollectionView/CompositionCollectionView.csproj `
+          & "${{ steps.vs.outputs.MSBUILD }}" src/CompositionCollectionView/CompositionCollectionView.csproj `
             /t:Build /p:Configuration=Release /p:Platform=AnyCPU
 
       - name: Restore & Build WinAppSdk library
         shell: pwsh
         run: |
-          # Restore using dotnet (has .NET 10 SDK), build using msbuild (has VS toolset for PRI)
-          dotnet restore src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj -p:Platform=x64
-          # Find VS MSBuild that supports .NET 10
-          $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
-          Write-Host "Using MSBuild: $vsPath"
-          & $vsPath src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
-            /t:Build /p:Configuration=Release /p:Platform=x64
+          dotnet restore src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj
+          dotnet build src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
+            -c Release `
+            --no-restore `
+            -p:Platform=x64 `
+            -p:VsInstallRoot="${{ steps.vs.outputs.VS_PATH }}"
 
       - name: Pack NuGet
         shell: pwsh
