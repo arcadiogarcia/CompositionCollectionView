@@ -51,13 +51,17 @@ jobs:
 
       - name: Restore & Build WinAppSdk library
         shell: pwsh
+        env:
+          # Let VS MSBuild find the .NET 10 SDK installed by setup-dotnet
+          DOTNET_HOST_PATH: ${{ env.DOTNET_ROOT }}\dotnet.exe
         run: |
-          dotnet restore src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj
-          dotnet build src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
-            -c Release `
-            --no-restore `
-            -p:Platform=x64 `
-            -p:VsInstallRoot="${{ steps.vs.outputs.VS_PATH }}"
+          # Restore with dotnet (guaranteed to have .NET 10 SDK)
+          dotnet restore src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj -p:Platform=x64
+          # Build with VS MSBuild (has PRI tools) using dotnet SDK's .NET 10 targets
+          & "${{ steps.vs.outputs.MSBUILD }}" src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
+            /t:Build /p:Configuration=Release /p:Platform=x64 `
+            "/p:DotNetRoot=$env:DOTNET_ROOT\" `
+            "/p:NetCoreTargetingPackRoot=$env:DOTNET_ROOT\packs"
 
       - name: Pack NuGet
         shell: pwsh
