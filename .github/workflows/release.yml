@@ -79,8 +79,13 @@ jobs:
       - name: Push to NuGet.org
         shell: pwsh
         run: |
-          dotnet nuget push artifacts/*.nupkg `
-            --api-key ${{ secrets.NUGET_API_KEY }} `
+          $key = "${{ secrets.NUGET_API_KEY }}"
+          Write-Host "API key length: $($key.Length)"
+          Write-Host "API key first 4 chars: $($key.Substring(0, [Math]::Min(4, $key.Length)))..."
+          $pkg = Get-ChildItem artifacts/*.nupkg | Select-Object -First 1
+          Write-Host "Package: $($pkg.Name) ($($pkg.Length) bytes)"
+          dotnet nuget push $pkg.FullName `
+            --api-key $key `
             --source https://api.nuget.org/v3/index.json `
             --skip-duplicate
 
