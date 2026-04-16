@@ -43,10 +43,12 @@ jobs:
       - name: Restore & Build WinAppSdk library
         shell: pwsh
         run: |
-          msbuild src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
-            /t:Restore /p:Platform=x64
-          msbuild src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
-            /t:Build /p:Configuration=Release /p:Platform=x64
+          # Use dotnet msbuild to get .NET 10 support, with VS toolset for PRI tasks
+          $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
+          $env:VCTargetsPath = "$vsPath\MSBuild\Microsoft\VC\v170\"
+          dotnet restore src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj -p:Platform=x64
+          dotnet build src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
+            -c Release -p:Platform=x64 --no-restore
 
       - name: Pack NuGet
         shell: pwsh
