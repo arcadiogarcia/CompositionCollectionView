@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   release:
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
 
@@ -25,12 +25,6 @@ jobs:
       - name: Setup NuGet
         uses: nuget/setup-nuget@v2
 
-      - name: Restore NuGet packages
-        shell: pwsh
-        run: |
-          msbuild src/CompositionCollectionView/CompositionCollectionView.csproj /t:Restore /p:Platform=AnyCPU
-          msbuild src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj /t:Restore /p:Platform=x64
-
       - name: Extract version from tag
         id: version
         shell: pwsh
@@ -39,15 +33,18 @@ jobs:
           $ver = $tag -replace '^v', ''
           "VERSION=$ver" >> $env:GITHUB_OUTPUT
 
-      - name: Build UWP library
+      - name: Restore & Build UWP library
         shell: pwsh
         run: |
+          nuget restore src/CompositionCollectionView/CompositionCollectionView.csproj
           msbuild src/CompositionCollectionView/CompositionCollectionView.csproj `
             /t:Build /p:Configuration=Release /p:Platform=AnyCPU
 
-      - name: Build WinAppSdk library
+      - name: Restore & Build WinAppSdk library
         shell: pwsh
         run: |
+          msbuild src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
+            /t:Restore /p:Platform=x64
           msbuild src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
             /t:Build /p:Configuration=Release /p:Platform=x64
 
