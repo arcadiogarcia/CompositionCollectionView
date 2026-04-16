@@ -28,7 +28,7 @@ jobs:
       - name: Restore NuGet packages
         shell: pwsh
         run: |
-          nuget restore src/CompositionCollectionView/CompositionCollectionView.csproj -PackagesDirectory packages
+          msbuild src/CompositionCollectionView/CompositionCollectionView.csproj /t:Restore /p:Platform=AnyCPU
           msbuild src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj /t:Restore /p:Platform=x64
 
       - name: Extract version from tag
