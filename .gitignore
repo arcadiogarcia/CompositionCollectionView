@@ -37,3 +37,12 @@ bld/
 
 # Temp PR source
 _temp_pr_source/
+
+# MSIX packaging artifacts
+*.msix
+msix-layout*/
+out/
+publish-sc/
+artifacts/
+tools/
+upload.ps1

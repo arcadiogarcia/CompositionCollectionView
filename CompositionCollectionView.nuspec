@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>CompositionCollectionView</id>
+    <version>$version$</version>
+    <authors>Arcadio Garcia</authors>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/arcadiogarcia/CompositionCollectionView</projectUrl>
+    <repository type="git" url="https://github.com/arcadiogarcia/CompositionCollectionView" />
+    <description>A composition-driven collection view control for UWP and WinUI 3 / Windows App SDK, with fully customizable layouts and behaviors powered by Windows.UI.Composition.</description>
+    <tags>uwp winui3 winappsdk composition collection layout animation xaml</tags>
+    <readme>docs\README.md</readme>
+    <dependencies>
+      <group targetFramework="UAP10.0.19041" />
+      <group targetFramework="net10.0-windows10.0.19041.0">
+        <dependency id="Microsoft.WindowsAppSDK" version="1.7.250401001" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <!-- README -->
+    <file src="README.md" target="docs\README.md" />
+
+    <!-- UWP (uap10.0.19041) -->
+    <file src="src\CompositionCollectionView\bin\Release\CompositionCollectionView.dll" target="lib\uap10.0.19041" />
+    <file src="src\CompositionCollectionView\bin\Release\CompositionCollectionView.pri" target="lib\uap10.0.19041" />
+    <file src="src\CompositionCollectionView\bin\Release\CompositionCollectionView\**" target="lib\uap10.0.19041\CompositionCollectionView" />
+
+    <!-- WinUI 3 / Windows App SDK (net10.0-windows10.0.19041.0) -->
+    <file src="src\CompositionCollectionView.WinAppSdk\bin\x64\Release\net10.0-windows10.0.19041.0\CompositionCollectionView.dll" target="lib\net10.0-windows10.0.19041.0" />
+    <file src="src\CompositionCollectionView.WinAppSdk\bin\x64\Release\net10.0-windows10.0.19041.0\CompositionCollectionView.xml" target="lib\net10.0-windows10.0.19041.0" />
+    <file src="src\CompositionCollectionView.WinAppSdk\bin\x64\Release\net10.0-windows10.0.19041.0\CompositionCollectionView.pri" target="lib\net10.0-windows10.0.19041.0" />
+    <file src="src\CompositionCollectionView.WinAppSdk\bin\x64\Release\net10.0-windows10.0.19041.0\CompositionCollectionView\**" target="lib\net10.0-windows10.0.19041.0\CompositionCollectionView" />
+  </files>
+</package>

@@ -1,0 +1,73 @@
+name: Release & Publish NuGet
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: nuget/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        shell: pwsh
+        run: |
+          nuget restore src/CompositionCollectionView/CompositionCollectionView.csproj -PackagesDirectory packages
+          msbuild src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj /t:Restore /p:Platform=x64
+
+      - name: Extract version from tag
+        id: version
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+          $ver = $tag -replace '^v', ''
+          "VERSION=$ver" >> $env:GITHUB_OUTPUT
+
+      - name: Build UWP library
+        shell: pwsh
+        run: |
+          msbuild src/CompositionCollectionView/CompositionCollectionView.csproj `
+            /t:Build /p:Configuration=Release /p:Platform=AnyCPU
+
+      - name: Build WinAppSdk library
+        shell: pwsh
+        run: |
+          msbuild src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
+            /t:Build /p:Configuration=Release /p:Platform=x64
+
+      - name: Pack NuGet
+        shell: pwsh
+        run: |
+          nuget pack CompositionCollectionView.nuspec `
+            -Version ${{ steps.version.outputs.VERSION }} `
+            -OutputDirectory artifacts
+
+      - name: Push to NuGet.org
+        shell: pwsh
+        run: |
+          dotnet nuget push artifacts/*.nupkg `
+            --api-key ${{ secrets.NUGET_API_KEY }} `
+            --source https://api.nuget.org/v3/index.json `
+            --skip-duplicate
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: artifacts/*.nupkg

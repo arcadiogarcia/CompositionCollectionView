@@ -16,6 +16,8 @@
     <DefineConstants>$(DefineConstants);WINAPPSDK</DefineConstants>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!-- Packing is done via .nuspec to combine UWP + WinUI targets -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,7 +28,7 @@
     </PackageReference>
   </ItemGroup>
 
-  <!-- Link all source files from the UWP library (shared codebase) -->
+  <!-- Shared source files from the UWP library project -->
   <ItemGroup>
     <Compile Include="..\CompositionCollectionView\**\*.cs"
              Exclude="..\CompositionCollectionView\obj\**;..\CompositionCollectionView\bin\**;..\CompositionCollectionView\Properties\**"
