@@ -52,25 +52,17 @@ jobs:
       - name: Restore & Build WinAppSdk library
         shell: pwsh
         run: |
-          # Use dotnet msbuild (has .NET 10 SDK) but point it to VS's AppxPackage targets for PRI generation
-          $vsPath = "${{ steps.vs.outputs.VS_PATH }}"
-          
-          # Find the VS MSBuild extensions path containing the AppxPackage/PRI targets
-          $vsVersion = (Get-ChildItem "$vsPath\MSBuild\Microsoft\VisualStudio" -Directory | Sort-Object Name -Descending | Select-Object -First 1).Name
-          $appxPath = "$vsPath\MSBuild\Microsoft\VisualStudio\$vsVersion\AppxPackage"
-          Write-Host "VS Version: $vsVersion"
-          Write-Host "AppxPackage path: $appxPath"
-          Write-Host "Exists: $(Test-Path $appxPath)"
-          
-          # Set the environment variable that WinAppSDK PRI targets use
-          $env:MSBuildExtensionsPath = "$vsPath\MSBuild"
-          $env:VSInstallDir = "$vsPath\"
+          # dotnet build has .NET 10 SDK but lacks VS's PRI/AppxPackage tools.
+          # Pass MSBuildExtensionsPath pointing to VS's MSBuild dir so PRI targets resolve correctly.
+          $msbuildExtPath = "${{ steps.vs.outputs.VS_PATH }}\MSBuild"
+          Write-Host "MSBuildExtensionsPath: $msbuildExtPath"
           
           dotnet restore src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj -p:Platform=x64
           dotnet build src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
             -c Release `
             --no-restore `
-            -p:Platform=x64
+            -p:Platform=x64 `
+            "-p:MSBuildExtensionsPath=$msbuildExtPath"
 
       - name: Pack NuGet
         shell: pwsh
