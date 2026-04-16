@@ -53,15 +53,25 @@ jobs:
         shell: pwsh
         run: |
           # dotnet build has .NET 10 SDK but lacks VS's PRI/AppxPackage tools.
-          # Pass MSBuildExtensionsPath pointing to VS's MSBuild dir so PRI targets resolve correctly.
-          $msbuildExtPath = "${{ steps.vs.outputs.VS_PATH }}\MSBuild"
+          # Find the AppxPackage path and pass it directly to override the PRI task resolution.
+          $vsPath = "${{ steps.vs.outputs.VS_PATH }}"
+          $msbuildExtPath = "$vsPath\MSBuild"
+          
+          # Find the VisualStudio version folder (e.g. v17.0, v18.0)
+          $vsVerDir = Get-ChildItem "$msbuildExtPath\Microsoft\VisualStudio" -Directory -Filter "v*" | Select-Object -First 1
+          $appxPath = "$($vsVerDir.FullName)\AppxPackage"
+          Write-Host "VS Path: $vsPath"
           Write-Host "MSBuildExtensionsPath: $msbuildExtPath"
+          Write-Host "VS Version dir: $($vsVerDir.Name)"
+          Write-Host "AppxMSBuildToolsPath: $appxPath"
+          Write-Host "PRI DLL exists: $(Test-Path "$appxPath\Microsoft.Build.Packaging.Pri.Tasks.dll")"
           
           dotnet restore src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj -p:Platform=x64
           dotnet build src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
             -c Release `
             --no-restore `
             -p:Platform=x64 `
+            "-p:AppxMSBuildToolsPath=$appxPath\" `
             "-p:MSBuildExtensionsPath=$msbuildExtPath"
 
       - name: Pack NuGet
