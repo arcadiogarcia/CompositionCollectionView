@@ -21,6 +21,8 @@ jobs:
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
+        with:
+          vs-version: '[18.0,)'
 
       - name: Setup NuGet
         uses: nuget/setup-nuget@v2
@@ -43,12 +45,13 @@ jobs:
       - name: Restore & Build WinAppSdk library
         shell: pwsh
         run: |
-          # Use dotnet msbuild to get .NET 10 support, with VS toolset for PRI tasks
-          $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
-          $env:VCTargetsPath = "$vsPath\MSBuild\Microsoft\VC\v170\"
+          # Restore using dotnet (has .NET 10 SDK), build using msbuild (has VS toolset for PRI)
           dotnet restore src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj -p:Platform=x64
-          dotnet build src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
-            -c Release -p:Platform=x64 --no-restore
+          # Find VS MSBuild that supports .NET 10
+          $vsPath = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -requires Microsoft.Component.MSBuild -find "MSBuild\**\Bin\MSBuild.exe" | Select-Object -First 1
+          Write-Host "Using MSBuild: $vsPath"
+          & $vsPath src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
+            /t:Build /p:Configuration=Release /p:Platform=x64
 
       - name: Pack NuGet
         shell: pwsh
