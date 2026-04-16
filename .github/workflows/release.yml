@@ -52,17 +52,13 @@ jobs:
       - name: Restore & Build WinAppSdk library
         shell: pwsh
         run: |
-          # dotnet build has .NET 10 SDK but lacks VS's PRI/AppxPackage tools.
-          # Find the AppxPackage path and pass it directly to override the PRI task resolution.
+          # dotnet build has .NET 10 but not VS's PRI task DLLs. We just need AppxMSBuildToolsPath.
+          # The MrtCore.PriGen.targets construct: $(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\AppxPackage\
+          # We override AppxMSBuildToolsPath to point directly to VS's copy.
           $vsPath = "${{ steps.vs.outputs.VS_PATH }}"
-          $msbuildExtPath = "$vsPath\MSBuild"
-          
-          # Find the VisualStudio version folder (e.g. v17.0, v18.0)
-          $vsVerDir = Get-ChildItem "$msbuildExtPath\Microsoft\VisualStudio" -Directory -Filter "v*" | Select-Object -First 1
+          $msbuildDir = "$vsPath\MSBuild"
+          $vsVerDir = Get-ChildItem "$msbuildDir\Microsoft\VisualStudio" -Directory -Filter "v*" | Select-Object -First 1
           $appxPath = "$($vsVerDir.FullName)\AppxPackage"
-          Write-Host "VS Path: $vsPath"
-          Write-Host "MSBuildExtensionsPath: $msbuildExtPath"
-          Write-Host "VS Version dir: $($vsVerDir.Name)"
           Write-Host "AppxMSBuildToolsPath: $appxPath"
           Write-Host "PRI DLL exists: $(Test-Path "$appxPath\Microsoft.Build.Packaging.Pri.Tasks.dll")"
           
@@ -71,8 +67,7 @@ jobs:
             -c Release `
             --no-restore `
             -p:Platform=x64 `
-            "-p:AppxMSBuildToolsPath=$appxPath\" `
-            "-p:MSBuildExtensionsPath=$msbuildExtPath"
+            "-p:AppxMSBuildToolsPath=$appxPath\"
 
       - name: Pack NuGet
         shell: pwsh
