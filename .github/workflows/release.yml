@@ -94,10 +94,12 @@ jobs:
       - name: Push to NuGet.org
         shell: pwsh
         run: |
-          dotnet nuget push artifacts/*.nupkg `
-            --api-key ${{ secrets.NUGET_API_KEY }} `
-            --source https://api.nuget.org/v3/index.json `
-            --skip-duplicate
+          Get-ChildItem artifacts\*.nupkg | ForEach-Object {
+            dotnet nuget push $_.FullName `
+              --api-key ${{ secrets.NUGET_API_KEY }} `
+              --source https://api.nuget.org/v3/index.json `
+              --skip-duplicate
+          }
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
