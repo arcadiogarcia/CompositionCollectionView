@@ -49,7 +49,8 @@ jobs:
           & "${{ steps.vs.outputs.MSBUILD }}" src/CompositionCollectionView/CompositionCollectionView.csproj `
             /t:Build /p:Configuration=Release /p:Platform=AnyCPU
 
-      - name: Restore & Build WinAppSdk library
+      - name: Resolve AppxMSBuildToolsPath
+        id: appx
         shell: pwsh
         run: |
           # dotnet build has .NET 10 but not VS's PRI task DLLs. We just need AppxMSBuildToolsPath.
@@ -61,13 +62,27 @@ jobs:
           $appxPath = "$($vsVerDir.FullName)\AppxPackage"
           Write-Host "AppxMSBuildToolsPath: $appxPath"
           Write-Host "PRI DLL exists: $(Test-Path "$appxPath\Microsoft.Build.Packaging.Pri.Tasks.dll")"
-          
+          "APPX_PATH=$appxPath" >> $env:GITHUB_OUTPUT
+
+      - name: Restore & Build WinAppSdk library (x64)
+        shell: pwsh
+        run: |
           dotnet restore src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj -p:Platform=x64
           dotnet build src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
             -c Release `
             --no-restore `
             -p:Platform=x64 `
-            "-p:AppxMSBuildToolsPath=$appxPath\"
+            "-p:AppxMSBuildToolsPath=${{ steps.appx.outputs.APPX_PATH }}\"
+
+      - name: Restore & Build WinAppSdk library (ARM64)
+        shell: pwsh
+        run: |
+          dotnet restore src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj -p:Platform=ARM64
+          dotnet build src/CompositionCollectionView.WinAppSdk/CompositionCollectionView.WinAppSdk.csproj `
+            -c Release `
+            --no-restore `
+            -p:Platform=ARM64 `
+            "-p:AppxMSBuildToolsPath=${{ steps.appx.outputs.APPX_PATH }}\"
 
       - name: Pack NuGet
         shell: pwsh

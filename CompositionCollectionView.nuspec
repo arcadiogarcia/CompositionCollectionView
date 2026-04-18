@@ -26,10 +26,16 @@
     <file src="src\CompositionCollectionView\bin\Release\CompositionCollectionView.pri" target="lib\uap10.0.19041" />
     <file src="src\CompositionCollectionView\bin\Release\CompositionCollectionView\**" target="lib\uap10.0.19041\CompositionCollectionView" />
 
-    <!-- WinUI 3 / Windows App SDK (net10.0-windows10.0.19041.0) -->
+    <!-- WinUI 3 / Windows App SDK – compile reference + resources (net10.0-windows10.0.19041.0) -->
     <file src="src\CompositionCollectionView.WinAppSdk\bin\x64\Release\net10.0-windows10.0.19041.0\CompositionCollectionView.dll" target="lib\net10.0-windows10.0.19041.0" />
     <file src="src\CompositionCollectionView.WinAppSdk\bin\x64\Release\net10.0-windows10.0.19041.0\CompositionCollectionView.xml" target="lib\net10.0-windows10.0.19041.0" />
     <file src="src\CompositionCollectionView.WinAppSdk\bin\x64\Release\net10.0-windows10.0.19041.0\CompositionCollectionView.pri" target="lib\net10.0-windows10.0.19041.0" />
     <file src="src\CompositionCollectionView.WinAppSdk\bin\x64\Release\net10.0-windows10.0.19041.0\CompositionCollectionView\**" target="lib\net10.0-windows10.0.19041.0\CompositionCollectionView" />
+
+    <!-- WinUI 3 / Windows App SDK – x64 runtime -->
+    <file src="src\CompositionCollectionView.WinAppSdk\bin\x64\Release\net10.0-windows10.0.19041.0\CompositionCollectionView.dll" target="runtimes\win-x64\lib\net10.0-windows10.0.19041.0" />
+
+    <!-- WinUI 3 / Windows App SDK – ARM64 runtime -->
+    <file src="src\CompositionCollectionView.WinAppSdk\bin\ARM64\Release\net10.0-windows10.0.19041.0\CompositionCollectionView.dll" target="runtimes\win-arm64\lib\net10.0-windows10.0.19041.0" />
   </files>
 </package>
