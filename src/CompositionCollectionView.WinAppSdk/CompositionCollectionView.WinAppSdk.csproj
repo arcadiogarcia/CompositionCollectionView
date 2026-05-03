@@ -21,17 +21,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250401001" />
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260317003" />
     <PackageReference Include="PolySharp" Version="1.14.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CompositionExpressions.WinAppSdk\CompositionExpressions.WinAppSdk.csproj" />
+  </ItemGroup>
+
   <!-- Shared source files from the UWP library project -->
   <ItemGroup>
     <Compile Include="..\CompositionCollectionView\**\*.cs"
-             Exclude="..\CompositionCollectionView\obj\**;..\CompositionCollectionView\bin\**;..\CompositionCollectionView\Properties\**"
+             Exclude="..\CompositionCollectionView\obj\**;..\CompositionCollectionView\bin\**;..\CompositionCollectionView\Properties\**;..\CompositionCollectionView\ExpressionsFork\**;..\CompositionCollectionView\AnimatableNodes\**;..\CompositionCollectionView\BindableCompositionPropertySet.cs;..\CompositionCollectionView\AnimationConstants.cs"
              LinkBase="" />
   </ItemGroup>
 

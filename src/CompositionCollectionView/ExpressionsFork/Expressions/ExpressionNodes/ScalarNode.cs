@@ -17,6 +17,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
     public sealed class ScalarNode : ExpressionNode
     {
         /// <summary>
+        /// Optional UI-thread value provider that, when set, overrides the normal
+        /// expression-tree walk inside <see cref="Evaluate"/> and returns the
+        /// caller-supplied live value instead.
+        ///
+        /// <para>This is the escape hatch for animated leaves whose underlying
+        /// composition state is not readable live from the UI thread (e.g. a
+        /// <c>Visual.Offset.X</c> being driven by a composition KeyFrameAnimation;
+        /// the property getter returns the value that was last set from C#, not
+        /// the running animated value).</para>
+        ///
+        /// <para>Composition-side codegen (<c>ToExpressionString</c>) ignores this
+        /// provider entirely — the GPU still consumes the regular expression
+        /// tree, so rendering is unaffected. Only <see cref="Evaluate"/> on the
+        /// UI thread takes this shortcut.</para>
+        ///
+        /// <para>The provider is attached to the *outer* node returned by helpers
+        /// like <see cref="CommunityToolkit.Labs.WinUI.AnimatableScalarCompositionNode.Reference"/>;
+        /// when an embedding tree's <c>Evaluate</c> recurses into that subtree,
+        /// the provider intercepts before any stale composition read happens.</para>
+        /// </summary>
+        internal Func<float>? LiveValueProvider { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ScalarNode"/> class.
         /// </summary>
         internal ScalarNode()
@@ -269,6 +292,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
         /// <returns>The current value of the expression</returns>
         public float Evaluate()
         {
+            // Live-value escape hatch: if the producer of this node attached a UI-thread
+            // value provider (typically because the underlying composition source can't be
+            // read live from the UI thread), short-circuit and use it. Composition codegen
+            // is unaffected — see remarks on LiveValueProvider.
+            if (LiveValueProvider is not null)
+            {
+                return LiveValueProvider();
+            }
+
             switch (NodeType)
             {
                 case ExpressionNodeType.ConstantValue:

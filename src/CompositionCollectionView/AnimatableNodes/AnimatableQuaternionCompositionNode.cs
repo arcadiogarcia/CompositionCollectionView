@@ -11,11 +11,17 @@ public class AnimatableQuaternionCompositionNode : IDisposable
     private Visual _underlyingVisual;
     private bool disposedValue;
     private QuaternionNode? _currentAnimationNode = null;
+    private Func<Quaternion>? _liveValueProvider = null;
 
     public Quaternion Value
     {
         get
         {
+            if (_liveValueProvider is not null)
+            {
+                return _liveValueProvider();
+            }
+
             if (_currentAnimationNode is not null)
             {
                 // When the node value is being driven by a ongoing scalarnode animation, reading the property might return a stale value,
@@ -31,6 +37,7 @@ public class AnimatableQuaternionCompositionNode : IDisposable
         {
             _underlyingVisual.Orientation = value;
             _currentAnimationNode = null;
+            _liveValueProvider = null;
         }
     }
 
@@ -44,16 +51,40 @@ public class AnimatableQuaternionCompositionNode : IDisposable
     public void Animate(CompositionAnimation animation)
     {
         _currentAnimationNode = null;
+        _liveValueProvider = null;
         _underlyingVisual.StartAnimation(AnimationConstants.Orientation, animation);
     }
 
     public void Animate(QuaternionNode animation)
     {
         _currentAnimationNode = animation;
+        _liveValueProvider = null;
         _underlyingVisual.StartAnimation(AnimationConstants.Orientation, animation);
     }
 
-    public QuaternionNode Reference { get => _underlyingVisual.GetReference().Orientation; }
+    /// <summary>
+    /// Start a composition animation alongside a UI-thread closure that reproduces the
+    /// same value as a function of "now". See <see cref="AnimatableScalarCompositionNode.Animate(CompositionAnimation, Func{float})"/>
+    /// for the full design discussion.
+    /// </summary>
+    public void Animate(CompositionAnimation animation, Func<Quaternion> liveValueProvider)
+    {
+        _currentAnimationNode = null;
+        _liveValueProvider = liveValueProvider;
+        _underlyingVisual.StartAnimation(AnimationConstants.Orientation, animation);
+    }
+
+    public QuaternionNode Reference
+    {
+        get
+        {
+            var node = _underlyingVisual.GetReference().Orientation;
+            // Intercept Evaluate so embedding trees see the live Value, not the
+            // stale composer-cached Visual.Orientation. See ScalarNode.LiveValueProvider.
+            node.LiveValueProvider = () => this.Value;
+            return node;
+        }
+    }
 
     protected virtual void Dispose(bool disposing)
     {

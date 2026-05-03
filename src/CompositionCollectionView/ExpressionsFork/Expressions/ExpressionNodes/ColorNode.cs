@@ -16,6 +16,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
     public sealed class ColorNode : ExpressionNode
     {
         /// <summary>
+        /// Optional UI-thread live-value provider. See <see cref="ScalarNode.LiveValueProvider"/>
+        /// for the full rationale. When set, <see cref="Evaluate"/> short-circuits and returns
+        /// the supplied value before walking the expression tree. Composition codegen
+        /// (<c>ToExpressionString</c>) is unaffected, so the GPU still renders from the
+        /// regular tree.
+        /// </summary>
+        internal System.Func<Color> LiveValueProvider { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="ColorNode"/> class.
         /// </summary>
         internal ColorNode()
@@ -105,6 +114,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
         /// <returns>The current value of the expression</returns>
         public Color Evaluate()
         {
+            // Live-value escape hatch — see <see cref="LiveValueProvider"/>.
+            if (LiveValueProvider is not null)
+            {
+                return LiveValueProvider();
+            }
+
             switch (NodeType)
             {
                 case ExpressionNodeType.ConstantValue:

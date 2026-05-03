@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>CompositionExpressions</RootNamespace>
+    <AssemblyName>CompositionExpressions</AssemblyName>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWinUI>false</UseWinUI>
+    <Platforms>x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <DefineConstants>$(DefineConstants);WINAPPSDK</DefineConstants>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.7.250401001" />
+    <PackageReference Include="PolySharp" Version="1.14.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!--
+    The expression DSL types are physically located under
+    ..\CompositionCollectionView\ExpressionsFork (the typed AST + Evaluate())
+    and ..\CompositionCollectionView\AnimatableNodes (the named-cell wrappers).
+    This project compiles them into a standalone assembly so Combobulate
+    (and any future consumer) can consume them without taking a dependency
+    on CCV's collection-view types. CCV.WinAppSdk now ProjectReferences this
+    project and excludes those paths from its own compile set.
+  -->
+  <ItemGroup>
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\**\*.cs"
+             Exclude="..\CompositionCollectionView\ExpressionsFork\bin\**;..\CompositionCollectionView\ExpressionsFork\obj\**"
+             LinkBase="ExpressionsFork" />
+    <Compile Include="..\CompositionCollectionView\AnimatableNodes\**\*.cs"
+             Exclude="..\CompositionCollectionView\AnimatableNodes\bin\**;..\CompositionCollectionView\AnimatableNodes\obj\**"
+             LinkBase="AnimatableNodes" />
+    <Compile Include="..\CompositionCollectionView\BindableCompositionPropertySet.cs"
+             Link="BindableCompositionPropertySet.cs" />
+    <Compile Include="..\CompositionCollectionView\AnimationConstants.cs"
+             Link="AnimationConstants.cs" />
+  </ItemGroup>
+
+</Project>

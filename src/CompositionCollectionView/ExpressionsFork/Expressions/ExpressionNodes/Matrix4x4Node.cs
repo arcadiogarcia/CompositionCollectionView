@@ -16,6 +16,15 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
     public sealed partial class Matrix4x4Node : ExpressionNode
     {
         /// <summary>
+        /// Optional UI-thread live-value provider. See <see cref="ScalarNode.LiveValueProvider"/>
+        /// for the full rationale. When set, <see cref="Evaluate"/> short-circuits and returns
+        /// the supplied value before walking the expression tree. Composition codegen
+        /// (<c>ToExpressionString</c>) is unaffected, so the GPU still renders from the
+        /// regular tree.
+        /// </summary>
+        internal System.Func<Matrix4x4>? LiveValueProvider { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Matrix4x4Node"/> class.
         /// </summary>
         internal Matrix4x4Node()
@@ -418,6 +427,12 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
         /// <returns>The current value of the expression</returns>
         public Matrix4x4 Evaluate()
         {
+            // Live-value escape hatch — see <see cref="LiveValueProvider"/>.
+            if (LiveValueProvider is not null)
+            {
+                return LiveValueProvider();
+            }
+
             switch (NodeType)
             {
                 case ExpressionNodeType.ConstantValue:
@@ -460,6 +475,42 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
                         (Children[0] as BooleanNode).Evaluate() ?
                         (Children[1] as Matrix4x4Node).Evaluate() :
                         (Children[2] as Matrix4x4Node).Evaluate();
+                case ExpressionNodeType.Matrix4x4FromAxisAngle:
+                    {
+                        var axis = (Children[0] as Vector3Node).Evaluate();
+                        var angle = (Children[1] as ScalarNode).Evaluate();
+                        // Composition expression-language `Matrix4x4.CreateFromAxisAngle`
+                        // matches System.Numerics's row-vector convention used elsewhere
+                        // in the renderer (rotZ * rotX * rotY composes as
+                        // v' = ((v*rotZ)*rotX)*rotY).
+                        return Matrix4x4.CreateFromAxisAngle(axis, angle);
+                    }
+                case ExpressionNodeType.Matrix4x4FromTranslation:
+                    {
+                        var t = (Children[0] as Vector3Node).Evaluate();
+                        return Matrix4x4.CreateTranslation(t);
+                    }
+                case ExpressionNodeType.Matrix4x4FromScale:
+                    {
+                        var s = (Children[0] as Vector3Node).Evaluate();
+                        return Matrix4x4.CreateScale(s);
+                    }
+                case ExpressionNodeType.Inverse:
+                    {
+                        var src = (Children[0] as Matrix4x4Node).Evaluate();
+                        Matrix4x4.Invert(src, out var inv);
+                        return inv;
+                    }
+                case ExpressionNodeType.Matrix4x4:
+                    return new Matrix4x4(
+                        (Children[0]  as ScalarNode).Evaluate(), (Children[1]  as ScalarNode).Evaluate(),
+                        (Children[2]  as ScalarNode).Evaluate(), (Children[3]  as ScalarNode).Evaluate(),
+                        (Children[4]  as ScalarNode).Evaluate(), (Children[5]  as ScalarNode).Evaluate(),
+                        (Children[6]  as ScalarNode).Evaluate(), (Children[7]  as ScalarNode).Evaluate(),
+                        (Children[8]  as ScalarNode).Evaluate(), (Children[9]  as ScalarNode).Evaluate(),
+                        (Children[10] as ScalarNode).Evaluate(), (Children[11] as ScalarNode).Evaluate(),
+                        (Children[12] as ScalarNode).Evaluate(), (Children[13] as ScalarNode).Evaluate(),
+                        (Children[14] as ScalarNode).Evaluate(), (Children[15] as ScalarNode).Evaluate());
                 case ExpressionNodeType.Swizzle:
                     return new Matrix4x4(
                         Children[0].EvaluateSubchannel(Subchannels[0]),

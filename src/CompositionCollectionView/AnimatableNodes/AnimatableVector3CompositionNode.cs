@@ -12,11 +12,17 @@ public class AnimatableVector3CompositionNode : IDisposable
     private Visual _underlyingVisual;
     private bool disposedValue;
     private Vector3Node? _currentAnimationNode = null;
+    private Func<Vector3>? _liveValueProvider = null;
 
     public Vector3 Value
     {
         get
         {
+            if (_liveValueProvider is not null)
+            {
+                return _liveValueProvider();
+            }
+
             if (_currentAnimationNode is not null)
             {
                 // When the node value is being driven by a ongoing scalarnode animation, reading the property might return a stale value,
@@ -32,6 +38,7 @@ public class AnimatableVector3CompositionNode : IDisposable
         {
             _underlyingVisual.Offset = value;
             _currentAnimationNode = null;
+            _liveValueProvider = null;
         }
     }
 
@@ -45,16 +52,40 @@ public class AnimatableVector3CompositionNode : IDisposable
     public void Animate(CompositionAnimation animation)
     {
         _currentAnimationNode = null;
+        _liveValueProvider = null;
         _underlyingVisual.StartAnimation(Offset, animation);
     }
 
     public void Animate(Vector3Node animation)
     {
         _currentAnimationNode = animation;
+        _liveValueProvider = null;
         _underlyingVisual.StartAnimation(Offset, animation);
     }
 
-    public Vector3Node Reference { get => _underlyingVisual.GetReference().Offset; }
+    /// <summary>
+    /// Start a composition animation alongside a UI-thread closure that reproduces the
+    /// same value as a function of "now". See <see cref="AnimatableScalarCompositionNode.Animate(CompositionAnimation, Func{float})"/>
+    /// for the full design discussion.
+    /// </summary>
+    public void Animate(CompositionAnimation animation, Func<Vector3> liveValueProvider)
+    {
+        _currentAnimationNode = null;
+        _liveValueProvider = liveValueProvider;
+        _underlyingVisual.StartAnimation(Offset, animation);
+    }
+
+    public Vector3Node Reference
+    {
+        get
+        {
+            var node = _underlyingVisual.GetReference().Offset;
+            // Intercept Evaluate so embedding trees see the live Value, not the
+            // stale composer-cached Visual.Offset. See remarks on ScalarNode.LiveValueProvider.
+            node.LiveValueProvider = () => this.Value;
+            return node;
+        }
+    }
 
     protected virtual void Dispose(bool disposing)
     {

@@ -12,11 +12,17 @@ public class AnimatableMatrix4x4CompositionNode : IDisposable
     private Visual _underlyingVisual;
     private bool disposedValue;
     private Matrix4x4Node? _currentAnimationNode = null;
+    private Func<Matrix4x4>? _liveValueProvider = null;
 
     public Matrix4x4 Value
     {
         get
         {
+            if (_liveValueProvider is not null)
+            {
+                return _liveValueProvider();
+            }
+
             if (_currentAnimationNode is not null)
             {
                 // When the node value is being driven by a ongoing scalarnode animation, reading the property might return a stale value,
@@ -32,6 +38,7 @@ public class AnimatableMatrix4x4CompositionNode : IDisposable
         {
             _underlyingVisual.TransformMatrix = value;
             _currentAnimationNode = null;
+            _liveValueProvider = null;
         }
     }
 
@@ -45,16 +52,40 @@ public class AnimatableMatrix4x4CompositionNode : IDisposable
     public void Animate(CompositionAnimation animation)
     {
         _currentAnimationNode = null;
+        _liveValueProvider = null;
         _underlyingVisual.StartAnimation(TransformMatrix, animation);
     }
 
     public void Animate(Matrix4x4Node animation)
     {
         _currentAnimationNode = animation;
+        _liveValueProvider = null;
         _underlyingVisual.StartAnimation(TransformMatrix, animation);
     }
 
-    public Matrix4x4Node Reference { get => _underlyingVisual.GetReference().TransformMatrix; }
+    /// <summary>
+    /// Start a composition animation alongside a UI-thread closure that reproduces the
+    /// same value as a function of "now". See <see cref="AnimatableScalarCompositionNode.Animate(CompositionAnimation, Func{float})"/>
+    /// for the full design discussion.
+    /// </summary>
+    public void Animate(CompositionAnimation animation, Func<Matrix4x4> liveValueProvider)
+    {
+        _currentAnimationNode = null;
+        _liveValueProvider = liveValueProvider;
+        _underlyingVisual.StartAnimation(TransformMatrix, animation);
+    }
+
+    public Matrix4x4Node Reference
+    {
+        get
+        {
+            var node = _underlyingVisual.GetReference().TransformMatrix;
+            // Intercept Evaluate so embedding trees see the live Value, not the
+            // stale composer-cached Visual.TransformMatrix. See ScalarNode.LiveValueProvider.
+            node.LiveValueProvider = () => this.Value;
+            return node;
+        }
+    }
 
     protected virtual void Dispose(bool disposing)
     {
