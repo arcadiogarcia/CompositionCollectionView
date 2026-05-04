@@ -314,13 +314,29 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
         }
 
         /// <summary>
+        /// Map the typed <see cref="Subchannel"/> enum to the literal token
+        /// the Composition expression parser accepts for matrix subchannel
+        /// access. The parser uses <c>_11</c>..<c>_44</c>, NOT the C# enum
+        /// name <c>Channel11</c>. Without this translation
+        /// <c>SubchannelsInternal</c> would emit <c>"someMatrix.Channel11"</c>
+        /// which fails with "An invalid subchannel was specified in the
+        /// expression" at <c>StartAnimation</c> time.
+        /// </summary>
+        private static string SubchannelToken(Subchannel s)
+        {
+            // Subchannel.Channel11 -> "Channel11" -> "_11".
+            string name = s.ToString();
+            return "_" + name.Substring("Channel".Length);
+        }
+
+        /// <summary>
         /// Create a new type by re-arranging the Matrix subchannels.
         /// </summary>
         /// <param name="s">The s.</param>
         /// <returns>ScalarNode.</returns>
         public ScalarNode GetSubchannels(Subchannel s)
         {
-            return SubchannelsInternal<ScalarNode>(s.ToString());
+            return SubchannelsInternal<ScalarNode>(SubchannelToken(s));
         }
 
         /// <summary>
@@ -331,7 +347,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
         /// <returns>Vector2Node</returns>
         public Vector2Node GetSubchannels(Subchannel s1, Subchannel s2)
         {
-            return SubchannelsInternal<Vector2Node>(s1.ToString(), s2.ToString());
+            return SubchannelsInternal<Vector2Node>(SubchannelToken(s1), SubchannelToken(s2));
         }
 
         /// <summary>
@@ -343,7 +359,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
         /// <returns>Vector3Node</returns>
         public Vector3Node GetSubchannels(Subchannel s1, Subchannel s2, Subchannel s3)
         {
-            return SubchannelsInternal<Vector3Node>(s1.ToString(), s2.ToString(), s3.ToString());
+            return SubchannelsInternal<Vector3Node>(SubchannelToken(s1), SubchannelToken(s2), SubchannelToken(s3));
         }
 
         /// <summary>
@@ -356,7 +372,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
         /// <returns>Vector4Node</returns>
         public Vector4Node GetSubchannels(Subchannel s1, Subchannel s2, Subchannel s3, Subchannel s4)
         {
-            return SubchannelsInternal<Vector4Node>(s1.ToString(), s2.ToString(), s3.ToString(), s4.ToString());
+            return SubchannelsInternal<Vector4Node>(SubchannelToken(s1), SubchannelToken(s2), SubchannelToken(s3), SubchannelToken(s4));
         }
 
         /// <summary>
@@ -371,7 +387,7 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
         /// <returns>Matrix3x2Node</returns>
         public Matrix3x2Node GetSubchannels(Subchannel s1, Subchannel s2, Subchannel s3, Subchannel s4, Subchannel s5, Subchannel s6)
         {
-            return SubchannelsInternal<Matrix3x2Node>(s1.ToString(), s2.ToString(), s3.ToString(), s4.ToString(), s5.ToString(), s6.ToString());
+            return SubchannelsInternal<Matrix3x2Node>(SubchannelToken(s1), SubchannelToken(s2), SubchannelToken(s3), SubchannelToken(s4), SubchannelToken(s5), SubchannelToken(s6));
         }
 
         /// <summary>
@@ -400,10 +416,10 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
                                          Subchannel s9, Subchannel s10, Subchannel s11, Subchannel s12,
                                          Subchannel s13, Subchannel s14, Subchannel s15, Subchannel s16)
         {
-            return SubchannelsInternal<Matrix4x4Node>(s1.ToString(), s2.ToString(), s3.ToString(), s4.ToString(),
-                                                      s5.ToString(), s6.ToString(), s7.ToString(), s8.ToString(),
-                                                      s9.ToString(), s10.ToString(), s11.ToString(), s12.ToString(),
-                                                      s13.ToString(), s14.ToString(), s15.ToString(), s16.ToString());
+            return SubchannelsInternal<Matrix4x4Node>(SubchannelToken(s1), SubchannelToken(s2), SubchannelToken(s3), SubchannelToken(s4),
+                                                      SubchannelToken(s5), SubchannelToken(s6), SubchannelToken(s7), SubchannelToken(s8),
+                                                      SubchannelToken(s9), SubchannelToken(s10), SubchannelToken(s11), SubchannelToken(s12),
+                                                      SubchannelToken(s13), SubchannelToken(s14), SubchannelToken(s15), SubchannelToken(s16));
         }
 #pragma warning restore SA1117 // Parameters must be on same line or separate lines
 
