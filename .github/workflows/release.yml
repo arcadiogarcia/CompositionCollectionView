@@ -45,8 +45,15 @@ jobs:
       - name: Restore & Build UWP library
         shell: pwsh
         run: |
-          # CCV ProjectReferences CompositionExpressions; building CCV builds both.
+          # CCV ProjectReferences CompositionExpressions; both UWP projects
+          # need their PackageReferences restored explicitly because
+          # `nuget restore` doesn't follow ProjectReferences across legacy
+          # UAP csprojs the way `dotnet restore` does for SDK-style ones.
+          nuget restore src/CompositionExpressions/CompositionExpressions.csproj
           nuget restore src/CompositionCollectionView/CompositionCollectionView.csproj
+          # Build the leaf first so its output is available when CCV is built.
+          & "${{ steps.vs.outputs.MSBUILD }}" src/CompositionExpressions/CompositionExpressions.csproj `
+            /t:Build /p:Configuration=Release /p:Platform=AnyCPU
           & "${{ steps.vs.outputs.MSBUILD }}" src/CompositionCollectionView/CompositionCollectionView.csproj `
             /t:Build /p:Configuration=Release /p:Platform=AnyCPU
 
