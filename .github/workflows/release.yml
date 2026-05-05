@@ -45,6 +45,7 @@ jobs:
       - name: Restore & Build UWP library
         shell: pwsh
         run: |
+          # CCV ProjectReferences CompositionExpressions; building CCV builds both.
           nuget restore src/CompositionCollectionView/CompositionCollectionView.csproj
           & "${{ steps.vs.outputs.MSBUILD }}" src/CompositionCollectionView/CompositionCollectionView.csproj `
             /t:Build /p:Configuration=Release /p:Platform=AnyCPU
@@ -87,6 +88,9 @@ jobs:
       - name: Pack NuGet
         shell: pwsh
         run: |
+          nuget pack CompositionExpressions.nuspec `
+            -Version ${{ steps.version.outputs.VERSION }} `
+            -OutputDirectory artifacts
           nuget pack CompositionCollectionView.nuspec `
             -Version ${{ steps.version.outputs.VERSION }} `
             -OutputDirectory artifacts

@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C7A2B3C4-1111-2222-3333-444455556701}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CompositionExpressions</RootNamespace>
+    <AssemblyName>CompositionExpressions</AssemblyName>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <TargetPlatformIdentifier>UAP</TargetPlatformIdentifier>
+    <TargetPlatformVersion Condition=" '$(TargetPlatformVersion)' == '' ">10.0.26100.0</TargetPlatformVersion>
+    <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+    <MinimumVisualStudioVersion>14</MinimumVisualStudioVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{A5A43C5B-DE2A-4C0C-9213-0A381AF9435A};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>;2008;CS1591</NoWarn>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008;CS1591</NoWarn>
+    <DebugType>full</DebugType>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <PlatformTarget>x86</PlatformTarget>
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008;CS1591</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM'">
+    <PlatformTarget>ARM</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\ARM\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008;CS1591</NoWarn>
+    <DebugType>full</DebugType>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM'">
+    <PlatformTarget>ARM</PlatformTarget>
+    <OutputPath>bin\ARM\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008;CS1591</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|ARM64'">
+    <PlatformTarget>ARM64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\ARM64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008;CS1591</NoWarn>
+    <DebugType>full</DebugType>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|ARM64'">
+    <PlatformTarget>ARM64</PlatformTarget>
+    <OutputPath>bin\ARM64\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008;CS1591</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <NoWarn>;2008;CS1591</NoWarn>
+    <DebugType>full</DebugType>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE;NETFX_CORE;WINDOWS_UWP</DefineConstants>
+    <Optimize>true</Optimize>
+    <NoWarn>;2008;CS1591</NoWarn>
+    <DebugType>pdbonly</DebugType>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
+  </PropertyGroup>
+  <!--
+    UWP variant of the CompositionExpressions library. Compiles the same
+    source files that ..\CompositionExpressions.WinAppSdk consumes (the
+    typed expression-AST + animatable-node wrappers + property-set helper
+    + animation-property-name registry) but against the UAP target so
+    classic UWP apps can take a NuGet dependency on the typed-expressions
+    DSL without pulling in the WinAppSdk hosting story.
+
+    Sources physically live under ..\CompositionCollectionView\ to keep a
+    single canonical copy; both this project and the WinAppSdk twin
+    Compile Include them. CompositionCollectionView.csproj
+    ProjectReferences this assembly and excludes the same paths from its
+    own compile set.
+
+    Note: TrackedInteractionNodes.cs is intentionally excluded — it uses
+    Microsoft.UI.Composition.Interactions APIs that don't have a UWP
+    counterpart we want to ship today. The WinAppSdk twin includes it.
+  -->
+  <ItemGroup>
+    <Compile Include="GlobalUsings.cs" />
+    <Compile Include="..\CompositionExpressions.WinAppSdk\LiveValueOverride.cs" Link="LiveValueOverride.cs" />
+    <Compile Include="..\CompositionCollectionView\AnimationConstants.cs" Link="AnimationConstants.cs" />
+    <Compile Include="..\CompositionCollectionView\BindableCompositionPropertySet.cs" Link="BindableCompositionPropertySet.cs" />
+    <Compile Include="..\CompositionCollectionView\AnimatableNodes\AnimatableCompositionNodeSet.cs" Link="AnimatableNodes\AnimatableCompositionNodeSet.cs" />
+    <Compile Include="..\CompositionCollectionView\AnimatableNodes\AnimatableMatrix4x4CompositionNode.cs" Link="AnimatableNodes\AnimatableMatrix4x4CompositionNode.cs" />
+    <Compile Include="..\CompositionCollectionView\AnimatableNodes\AnimatableQuaternionCompositionNode.cs" Link="AnimatableNodes\AnimatableQuaternionCompositionNode.cs" />
+    <Compile Include="..\CompositionCollectionView\AnimatableNodes\AnimatableScalarCompositionNode.cs" Link="AnimatableNodes\AnimatableScalarCompositionNode.cs" />
+    <Compile Include="..\CompositionCollectionView\AnimatableNodes\AnimatableVector3CompositionNode.cs" Link="AnimatableNodes\AnimatableVector3CompositionNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\CompositionExtensions.cs" Link="ExpressionsFork\Expressions\CompositionExtensions.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionFunctions.cs" Link="ExpressionsFork\Expressions\ExpressionFunctions.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\FloatExtensions.cs" Link="ExpressionsFork\Expressions\FloatExtensions.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\OperationType.cs" Link="ExpressionsFork\Expressions\OperationType.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionNodes\BooleanNode.cs" Link="ExpressionsFork\Expressions\ExpressionNodes\BooleanNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionNodes\ColorNode.cs" Link="ExpressionsFork\Expressions\ExpressionNodes\ColorNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionNodes\ExpressionNode.cs" Link="ExpressionsFork\Expressions\ExpressionNodes\ExpressionNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionNodes\ExpressionNodeType.cs" Link="ExpressionsFork\Expressions\ExpressionNodes\ExpressionNodeType.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionNodes\Matrix3x2Node.cs" Link="ExpressionsFork\Expressions\ExpressionNodes\Matrix3x2Node.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionNodes\Matrix4x4Node.cs" Link="ExpressionsFork\Expressions\ExpressionNodes\Matrix4x4Node.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionNodes\Matrix4x4Node.Subchannel.cs" Link="ExpressionsFork\Expressions\ExpressionNodes\Matrix4x4Node.Subchannel.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionNodes\QuaternionNode.cs" Link="ExpressionsFork\Expressions\ExpressionNodes\QuaternionNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionNodes\ScalarNode.cs" Link="ExpressionsFork\Expressions\ExpressionNodes\ScalarNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionNodes\ValueKeywordKind.cs" Link="ExpressionsFork\Expressions\ExpressionNodes\ValueKeywordKind.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionNodes\Vector2Node.cs" Link="ExpressionsFork\Expressions\ExpressionNodes\Vector2Node.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionNodes\Vector3Node.cs" Link="ExpressionsFork\Expressions\ExpressionNodes\Vector3Node.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionNodes\Vector4Node.cs" Link="ExpressionsFork\Expressions\ExpressionNodes\Vector4Node.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.Constant.cs" Link="ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.Constant.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.CurrentValue.cs" Link="ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.CurrentValue.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.Reference.cs" Link="ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.Reference.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.StartingValue.cs" Link="ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.StartingValue.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.Target.cs" Link="ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.Target.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\AmbientLightReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\AmbientLightReferenceNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\ColorBrushReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\ColorBrushReferenceNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\DistantLightReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\DistantLightReferenceNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\DropShadowReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\DropShadowReferenceNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\InsetClipReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\InsetClipReferenceNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\InteractionTrackerReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\InteractionTrackerReferenceNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\ManipulationPropertySetReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\ManipulationPropertySetReferenceNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\NineGridBrushReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\NineGridBrushReferenceNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\PointerPositionPropertySetReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\PointerPositionPropertySetReferenceNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\PointLightReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\PointLightReferenceNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\PropertySetReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\PropertySetReferenceNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\ReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\ReferenceNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\SpotLightReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\SpotLightReferenceNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\SurfaceBrushReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\SurfaceBrushReferenceNode.cs" />
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\Expressions\ReferenceNodes\VisualReferenceNode.cs" Link="ExpressionsFork\Expressions\ReferenceNodes\VisualReferenceNode.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
+      <Version>6.2.14</Version>
+    </PackageReference>
+    <PackageReference Include="PolySharp" Version="1.14.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
+    <VisualStudioVersion>14.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
+</Project>

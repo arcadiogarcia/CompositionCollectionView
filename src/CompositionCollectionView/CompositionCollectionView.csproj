@@ -125,18 +125,21 @@
     <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AnimatableNodes\AnimatableCompositionNodeSet.cs" />
-    <Compile Include="AnimatableNodes\AnimatableMatrix4x4CompositionNode.cs" />
-    <Compile Include="AnimatableNodes\AnimatableQuaternionCompositionNode.cs" />
-    <Compile Include="AnimatableNodes\AnimatableScalarCompositionNode.cs" />
-    <Compile Include="AnimatableNodes\AnimatableVector3CompositionNode.cs" />
-    <Compile Include="AnimationConstants.cs" />
+    <!--
+      Source files for the typed Composition expression DSL + the
+      animatable-node wrappers + BindableCompositionPropertySet +
+      AnimationConstants live in this same folder, but are now compiled
+      into a sibling project (..\CompositionExpressions) and referenced
+      via ProjectReference below. That keeps a single canonical copy of
+      those files (this folder) while letting them ship as a separate
+      assembly so non-CCV consumers (e.g. Combobulate) can take a
+      dependency on them without pulling in the collection-view types.
+    -->
     <Compile Include="Behaviors\InteractionTrackerGesture\GesturePreviewControl.cs" />
     <Compile Include="Behaviors\InteractionTrackerGesture\InteractionTrackerGesture.cs" />
     <Compile Include="Behaviors\ElementInteractionTrackerBehavior.cs" />
     <Compile Include="Behaviors\InteractionTrackerBehavior.cs" />
     <Compile Include="Behaviors\LayoutBehavior.cs" />
-    <Compile Include="BindableCompositionPropertySet.cs" />
     <Compile Include="CompositionCollectionLayout.Behaviors.cs" />
     <Compile Include="CompositionCollectionLayout.cs" />
     <Compile Include="CompositionCollectionLayout.Overridable.cs" />
@@ -146,44 +149,10 @@
     <Compile Include="DeconstructPolyfillExtensions.cs" />
     <Compile Include="ElementReference.cs" />
     <Compile Include="GlobalUsings.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionNodes\BooleanNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionNodes\ColorNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionNodes\ExpressionNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionNodes\ExpressionNodeType.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionNodes\Matrix3x2Node.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionNodes\Matrix4x4Node.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionNodes\Matrix4x4Node.Subchannel.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionNodes\QuaternionNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionNodes\ScalarNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionNodes\ValueKeywordKind.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionNodes\Vector2Node.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionNodes\Vector3Node.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionNodes\Vector4Node.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.Constant.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.CurrentValue.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.Reference.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.StartingValue.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionValues\ExpressionValues.Target.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\AmbientLightReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\ColorBrushReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\DistantLightReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\DropShadowReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\InsetClipReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\InteractionTrackerReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\ManipulationPropertySetReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\NineGridBrushReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\PointerPositionPropertySetReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\PointLightReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\PropertySetReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\ReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\SpotLightReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\SurfaceBrushReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ReferenceNodes\VisualReferenceNode.cs" />
-    <Compile Include="ExpressionsFork\Expressions\CompositionExtensions.cs" />
-    <Compile Include="ExpressionsFork\Expressions\ExpressionFunctions.cs" />
-    <Compile Include="ExpressionsFork\Expressions\FloatExtensions.cs" />
-    <Compile Include="ExpressionsFork\Expressions\OperationType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CompositionExpressions\CompositionExpressions.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Themes\Generic.xaml">

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>arcadiog.CompositionExpressions</id>
+    <version>$version$</version>
+    <authors>Arcadio Garcia</authors>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/arcadiogarcia/CompositionCollectionView</projectUrl>
+    <repository type="git" url="https://github.com/arcadiogarcia/CompositionCollectionView" />
+    <description>A typed C# DSL for composing Windows.UI.Composition / Microsoft.UI.Composition expression animations, plus animatable-node wrappers and a property-set helper. Fork of the original CommunityToolkit ExpressionsFork; ships standalone for UWP and WinUI 3 / Windows App SDK so consumers can take the expression DSL without depending on the broader CompositionCollectionView control.</description>
+    <tags>uwp winui3 winappsdk composition expressions animation</tags>
+    <readme>docs\README.md</readme>
+    <dependencies>
+      <group targetFramework="UAP10.0.19041" />
+      <group targetFramework="net10.0-windows10.0.19041.0">
+        <dependency id="Microsoft.WindowsAppSDK" version="1.8.260317003" exclude="Build,Analyzers" />
+      </group>
+    </dependencies>
+  </metadata>
+  <files>
+    <!-- README -->
+    <file src="README.md" target="docs\README.md" />
+
+    <!-- UWP (uap10.0.19041) -->
+    <file src="src\CompositionExpressions\bin\Release\CompositionExpressions.dll" target="lib\uap10.0.19041" />
+    <file src="src\CompositionExpressions\bin\Release\CompositionExpressions.xml" target="lib\uap10.0.19041" />
+
+    <!-- WinUI 3 / Windows App SDK – compile reference (net10.0-windows10.0.19041.0) -->
+    <file src="src\CompositionExpressions.WinAppSdk\bin\x64\Release\net10.0-windows10.0.19041.0\CompositionExpressions.dll" target="lib\net10.0-windows10.0.19041.0" />
+    <file src="src\CompositionExpressions.WinAppSdk\bin\x64\Release\net10.0-windows10.0.19041.0\CompositionExpressions.xml" target="lib\net10.0-windows10.0.19041.0" />
+
+    <!-- WinUI 3 / Windows App SDK – x64 runtime -->
+    <file src="src\CompositionExpressions.WinAppSdk\bin\x64\Release\net10.0-windows10.0.19041.0\CompositionExpressions.dll" target="runtimes\win-x64\lib\net10.0-windows10.0.19041.0" />
+
+    <!-- WinUI 3 / Windows App SDK – ARM64 runtime -->
+    <file src="src\CompositionExpressions.WinAppSdk\bin\ARM64\Release\net10.0-windows10.0.19041.0\CompositionExpressions.dll" target="runtimes\win-arm64\lib\net10.0-windows10.0.19041.0" />
+  </files>
+</package>
