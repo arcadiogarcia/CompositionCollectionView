@@ -68,7 +68,10 @@ public static class LiveValueOverride
     public static IEnumerable<ScalarNode> EnumerateScalarLeaves(this ExpressionNode root)
     {
         if (root is null) throw new ArgumentNullException(nameof(root));
-        var visited = new HashSet<ExpressionNode>(System.Collections.Generic.ReferenceEqualityComparer.Instance);
+        // Use a hand-rolled reference-identity comparer rather than
+        // System.Collections.Generic.ReferenceEqualityComparer so this file
+        // compiles against UWP's older BCL too (the type was added in .NET 5).
+        var visited = new HashSet<ExpressionNode>(ReferenceComparer.Instance);
         var stack = new Stack<ExpressionNode>();
         stack.Push(root);
         while (stack.Count > 0)
@@ -81,6 +84,13 @@ public static class LiveValueOverride
                 foreach (var c in n.Children) stack.Push(c);
             }
         }
+    }
+
+    private sealed class ReferenceComparer : IEqualityComparer<ExpressionNode>
+    {
+        public static readonly ReferenceComparer Instance = new();
+        public bool Equals(ExpressionNode? x, ExpressionNode? y) => ReferenceEquals(x, y);
+        public int GetHashCode(ExpressionNode obj) => System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(obj);
     }
 
     /// <summary>
