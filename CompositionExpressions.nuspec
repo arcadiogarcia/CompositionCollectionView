@@ -21,9 +21,11 @@
     <!-- README -->
     <file src="README.md" target="docs\README.md" />
 
-    <!-- UWP (uap10.0.19041) -->
+    <!-- UWP (uap10.0.19041)
+         Note: classic UAP csprojs don't reliably produce the xmldoc next to
+         the dll, so we ship the dll only for UWP. WinAppSdk consumers do get
+         the .xml below. -->
     <file src="src\CompositionExpressions\bin\Release\CompositionExpressions.dll" target="lib\uap10.0.19041" />
-    <file src="src\CompositionExpressions\bin\Release\CompositionExpressions.xml" target="lib\uap10.0.19041" />
 
     <!-- WinUI 3 / Windows App SDK – compile reference (net10.0-windows10.0.19041.0) -->
     <file src="src\CompositionExpressions.WinAppSdk\bin\x64\Release\net10.0-windows10.0.19041.0\CompositionExpressions.dll" target="lib\net10.0-windows10.0.19041.0" />

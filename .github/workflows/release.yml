@@ -95,12 +95,15 @@ jobs:
       - name: Pack NuGet
         shell: pwsh
         run: |
+          $ErrorActionPreference = 'Stop'
           nuget pack CompositionExpressions.nuspec `
             -Version ${{ steps.version.outputs.VERSION }} `
             -OutputDirectory artifacts
+          if ($LASTEXITCODE -ne 0) { throw "nuget pack CompositionExpressions failed" }
           nuget pack CompositionCollectionView.nuspec `
             -Version ${{ steps.version.outputs.VERSION }} `
             -OutputDirectory artifacts
+          if ($LASTEXITCODE -ne 0) { throw "nuget pack CompositionCollectionView failed" }
 
       - name: Push to NuGet.org
         shell: pwsh
