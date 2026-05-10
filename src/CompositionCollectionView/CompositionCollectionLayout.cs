@@ -14,7 +14,7 @@ public interface ILayout
     void Activate(Panel panel);
 }
 
-public abstract partial class CompositionCollectionLayout<TId, TItem> : ILayout, IDisposable where TId : notnull
+public abstract partial class CompositionCollectionLayout<TId, TItem> : ILayout, IElementPoolPolicyHost, IDisposable where TId : notnull
 {
     public CompositionCollectionLayout(Func<TId, FrameworkElement> elementFactory)
     {
@@ -50,6 +50,7 @@ public abstract partial class CompositionCollectionLayout<TId, TItem> : ILayout,
     public Compositor Compositor => GetVisualProperties().RootPanelVisual.Compositor;
     public BindableCompositionPropertySet Properties { private init; get; }
     public AnimatableCompositionNodeSet AnimatableNodes { private init; get; }
+    public IElementPoolPolicy<TId, TItem>? ElementPoolPolicy { get; private set; }
 
     public CompositionCollectionLayout<TId, TItem>? ParentLayout { get; private set; }
 
@@ -59,6 +60,27 @@ public abstract partial class CompositionCollectionLayout<TId, TItem> : ILayout,
 
     public ElementReference<TId, TItem>? GetElement(TId obId) =>
         _elements.TryGetValue(obId, out var element) ? element : null;
+
+    internal ElementPoolContext<TId, TItem> CreateElementPoolContext() =>
+        new(RootPanel, RootPanelVisual, _elements.Values.ToArray());
+
+    void IElementPoolPolicyHost.SetElementPoolPolicyObject(object? policy)
+    {
+        if (policy is null)
+        {
+            ElementPoolPolicy = null;
+            return;
+        }
+
+        ElementPoolPolicy = policy as IElementPoolPolicy<TId, TItem>
+            ?? throw new InvalidOperationException(
+                $"Element pool policy type '{policy.GetType().FullName}' is not compatible with layout '{GetType().FullName}'.");
+    }
+
+    void IElementPoolPolicyHost.ClearElementPoolObject(ElementRemovalReason reason)
+    {
+        ElementPoolPolicy?.Clear(reason, CreateElementPoolContext());
+    }
 
 
     // Protected properties provided for convenience when implementing layouts

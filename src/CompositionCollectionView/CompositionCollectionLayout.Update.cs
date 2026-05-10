@@ -36,6 +36,26 @@ public abstract partial class CompositionCollectionLayout<TId, TItem> : ILayout,
 
     public async void ProcessSourceUpdate(IDictionary<TId, TItem> updatedElements, TaskCompletionSource<bool> taskCompletion, bool animate)
     {
+        var updateStopwatch = System.Diagnostics.Stopwatch.StartNew();
+        var destroyedCount = 0;
+        var updatedCount = 0;
+        var instantiatedCount = 0;
+        var reusedCount = 0;
+        var updateExistingMs = 0.0;
+        var instantiateMs = 0.0;
+        var destroyMs = 0.0;
+        var poolAcquireMs = 0.0;
+        var poolRetireMs = 0.0;
+        var elementFactoryMs = 0.0;
+        var childAddMs = 0.0;
+        var elementRefAllocMs = 0.0;
+        var poolRestoreMs = 0.0;
+        var elementsDictAddMs = 0.0;
+        var updateDataMs = 0.0;
+        var configureMs = 0.0;
+        var configureAnimationMs = 0.0;
+        var updateElementMs = 0.0;
+        var onElementsUpdatedMs = 0.0;
         List<Task<bool>> elementUpdateTask = new();
 
         HashSet<TId> processedElements = new();
@@ -44,11 +64,20 @@ public abstract partial class CompositionCollectionLayout<TId, TItem> : ILayout,
         {
             if (!updatedElements.ContainsKey(id))
             {
+                var stageStopwatch = System.Diagnostics.Stopwatch.StartNew();
                 DestroyElement(element, id);
+                stageStopwatch.Stop();
+                destroyMs += stageStopwatch.Elapsed.TotalMilliseconds;
+                destroyedCount++;
             }
             else
             {
+                var stageStopwatch = System.Diagnostics.Stopwatch.StartNew();
                 UpdateAndTransitionElement(element, updatedElements[id]);
+                stageStopwatch.Stop();
+                updateExistingMs += stageStopwatch.Elapsed.TotalMilliseconds;
+                processedElements.Add(id);
+                updatedCount++;
             }
         }
         foreach (var (id, model) in updatedElements)
@@ -57,10 +86,19 @@ public abstract partial class CompositionCollectionLayout<TId, TItem> : ILayout,
             {
                 continue;
             }
+            var stageStopwatch = System.Diagnostics.Stopwatch.StartNew();
             InstantiateElement(id, model);
+            stageStopwatch.Stop();
+            instantiateMs += stageStopwatch.Elapsed.TotalMilliseconds;
         }
 
+        var onElementsUpdatedStopwatch = System.Diagnostics.Stopwatch.StartNew();
         OnElementsUpdated();
+        onElementsUpdatedStopwatch.Stop();
+        onElementsUpdatedMs += onElementsUpdatedStopwatch.Elapsed.TotalMilliseconds;
+        updateStopwatch.Stop();
+        CompositionCollectionDiagnostics.Write(
+            $"CCV.UpdateSource layout={GetType().Name} source={updatedElements.Count} active={_elements.Count} updated={updatedCount} instantiated={instantiatedCount} reused={reusedCount} destroyed={destroyedCount} elapsedMs={updateStopwatch.Elapsed.TotalMilliseconds:F2} updateExistingMs={updateExistingMs:F2} instantiateMs={instantiateMs:F2} destroyMs={destroyMs:F2} poolAcquireMs={poolAcquireMs:F2} poolRetireMs={poolRetireMs:F2} factoryMs={elementFactoryMs:F2} childAddMs={childAddMs:F2} elementRefAllocMs={elementRefAllocMs:F2} poolRestoreMs={poolRestoreMs:F2} elementsDictAddMs={elementsDictAddMs:F2} updateDataMs={updateDataMs:F2} configureMs={configureMs:F2} configureAnimationMs={configureAnimationMs:F2} updateElementMs={updateElementMs:F2} onElementsUpdatedMs={onElementsUpdatedMs:F2}");
 
         taskCompletion.SetResult(true);
 
@@ -81,27 +119,103 @@ public abstract partial class CompositionCollectionLayout<TId, TItem> : ILayout,
 
         void InstantiateElement(TId id, TItem item)
         {
-            var element = ElementFactory(id);
-            RootPanel.Children.Add(element);
+            FrameworkElement element;
+            var context = CreateElementPoolContext();
+            FrameworkElement? pooledElement = null;
+            var poolAcquireStopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var reused = ElementPoolPolicy?.TryAcquire(id, item, context, out pooledElement) == true && pooledElement is not null;
+            poolAcquireStopwatch.Stop();
+            poolAcquireMs += poolAcquireStopwatch.Elapsed.TotalMilliseconds;
+            if (reused)
+            {
+                reusedCount++;
+                element = pooledElement!;
+                if (element.Parent is null)
+                {
+                    var swAdd = System.Diagnostics.Stopwatch.StartNew();
+                    RootPanel.Children.Add(element);
+                    swAdd.Stop();
+                    childAddMs += swAdd.Elapsed.TotalMilliseconds;
+                }
+                else if (!ReferenceEquals(element.Parent, RootPanel))
+                {
+                    throw new InvalidOperationException("A pooled element returned by the pool policy is parented to a different panel.");
+                }
+            }
+            else
+            {
+                var elementFactoryStopwatch = System.Diagnostics.Stopwatch.StartNew();
+                element = ElementFactory(id);
+                elementFactoryStopwatch.Stop();
+                elementFactoryMs += elementFactoryStopwatch.Elapsed.TotalMilliseconds;
+                var swAdd2 = System.Diagnostics.Stopwatch.StartNew();
+                RootPanel.Children.Add(element);
+                swAdd2.Stop();
+                childAddMs += swAdd2.Elapsed.TotalMilliseconds;
+            }
+            instantiatedCount++;
 
+            var swRefAlloc = System.Diagnostics.Stopwatch.StartNew();
             var elementReference = new ElementReference<TId, TItem>(id, item, element,/* source, tracker, trackerOwner,*/ this);
+            swRefAlloc.Stop();
+            elementRefAllocMs += swRefAlloc.Elapsed.TotalMilliseconds;
+            if (reused)
+            {
+                var swRestore = System.Diagnostics.Stopwatch.StartNew();
+                ElementPoolPolicy?.Restore(elementReference, item, CreateElementPoolContext());
+                swRestore.Stop();
+                poolRestoreMs += swRestore.Elapsed.TotalMilliseconds;
+            }
+            var updateDataStopwatch = System.Diagnostics.Stopwatch.StartNew();
             UpdateElementData(elementReference);
+            updateDataStopwatch.Stop();
+            updateDataMs += updateDataStopwatch.Elapsed.TotalMilliseconds;
+            var swDictAdd = System.Diagnostics.Stopwatch.StartNew();
             _elements[id] = elementReference;
+            swDictAdd.Stop();
+            elementsDictAddMs += swDictAdd.Elapsed.TotalMilliseconds;
 
+            var configureStopwatch = System.Diagnostics.Stopwatch.StartNew();
             ConfigureElement(elementReference);
             ConfigureElementBehaviors(elementReference);
+            configureStopwatch.Stop();
+            configureMs += configureStopwatch.Elapsed.TotalMilliseconds;
 
+            var configureAnimationStopwatch = System.Diagnostics.Stopwatch.StartNew();
             ConfigureElementAnimation(elementReference);
+            configureAnimationStopwatch.Stop();
+            configureAnimationMs += configureAnimationStopwatch.Elapsed.TotalMilliseconds;
+            var updateElementStopwatch = System.Diagnostics.Stopwatch.StartNew();
             UpdateElement(elementReference);
+            updateElementStopwatch.Stop();
+            updateElementMs += updateElementStopwatch.Elapsed.TotalMilliseconds;
         }
 
         void DestroyElement(ElementReference<TId, TItem> element, TId id)
         {
+            StopElementAnimation(element);
             CleanupElement(element);
             CleanupElementBehaviors(element);
-            RootPanel.Children.Remove(element.Container);
+            var policy = ElementPoolPolicy;
+            var context = CreateElementPoolContext();
+            var poolRetireStopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var retired = policy?.TryRetire(element, ElementRemovalReason.SourceUpdate, context) == true;
+            poolRetireStopwatch.Stop();
+            poolRetireMs += poolRetireStopwatch.Elapsed.TotalMilliseconds;
+            if (!retired)
+            {
+                if (policy is not null)
+                {
+                    policy.Destroy(element, ElementRemovalReason.SourceUpdate, context);
+                }
+                else
+                {
+                    RootPanel.Children.Remove(element.Container);
+                }
+            }
             _elements.Remove(id);
             element.Dispose();
+            policy?.Trim(CreateElementPoolContext());
         }
 
         void UpdateAndTransitionElement(ElementReference<TId, TItem> element, TItem newData)
@@ -117,7 +231,10 @@ public abstract partial class CompositionCollectionLayout<TId, TItem> : ILayout,
                 StopElementAnimation(element);
 
                 element.Model = newData;
+                var updateDataStopwatch = System.Diagnostics.Stopwatch.StartNew();
                 UpdateElementData(element);
+                updateDataStopwatch.Stop();
+                updateDataMs += updateDataStopwatch.Elapsed.TotalMilliseconds;
 
                 var progressAnimation = Compositor.CreateScalarKeyFrameAnimation();
                 progressAnimation.Duration = TimeSpan.FromMilliseconds(transition.Length);
@@ -159,10 +276,16 @@ public abstract partial class CompositionCollectionLayout<TId, TItem> : ILayout,
             else
             {
                 element.Model = newData;
+                var updateDataStopwatch = System.Diagnostics.Stopwatch.StartNew();
                 UpdateElementData(element);
+                updateDataStopwatch.Stop();
+                updateDataMs += updateDataStopwatch.Elapsed.TotalMilliseconds;
             }
 
+            var updateElementStopwatch = System.Diagnostics.Stopwatch.StartNew();
             UpdateElement(element);
+            updateElementStopwatch.Stop();
+            updateElementMs += updateElementStopwatch.Elapsed.TotalMilliseconds;
             processedElements.Add(element.Id);
         }
     }

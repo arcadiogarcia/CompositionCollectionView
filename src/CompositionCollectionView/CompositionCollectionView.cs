@@ -13,6 +13,7 @@ public sealed class CompositionCollectionView : Control
     private Canvas? _contentPanel;
     private ILayout? _layout;
     private Action? _pendingSourceUpdate;
+    private object? _elementPoolPolicy;
     public CompositionCollectionLayout<TId, TItem>? Layout<TId, TItem>() where TId : notnull => _layout as CompositionCollectionLayout<TId, TItem>;
 
     public delegate void LayoutChangedHandler(CompositionCollectionView sender, ILayout newLayout, bool isAnimated);
@@ -21,11 +22,32 @@ public sealed class CompositionCollectionView : Control
     public CompositionCollectionView()
     {
         this.DefaultStyleKey = typeof(CompositionCollectionView);
+        Unloaded += OnUnloaded;
+    }
+
+    public void SetElementPoolPolicy<TId, TItem>(IElementPoolPolicy<TId, TItem>? policy) where TId : notnull
+    {
+        if (_layout is IElementPoolPolicyHost host)
+        {
+            host.ClearElementPoolObject(ElementRemovalReason.ExplicitClear);
+        }
+
+        _elementPoolPolicy = policy;
+        ApplyElementPoolPolicy(_layout);
+    }
+
+    public void ClearElementPool()
+    {
+        if (_layout is IElementPoolPolicyHost host)
+        {
+            host.ClearElementPoolObject(ElementRemovalReason.ExplicitClear);
+        }
     }
 
     public void SetLayout(ILayout layout)
     {
         _layout = layout;
+        ApplyElementPoolPolicy(_layout);
         _layout.LayoutReplaced += OnLayoutReplaced;
 
         if (_contentPanel is not null)
@@ -54,8 +76,25 @@ public sealed class CompositionCollectionView : Control
         }
 
         _layout = newLayout;
+        ApplyElementPoolPolicy(_layout);
         _layout.LayoutReplaced += OnLayoutReplaced;
         LayoutChanged?.Invoke(this, _layout, isAnimated);
+    }
+
+    private void ApplyElementPoolPolicy(ILayout? layout)
+    {
+        if (layout is IElementPoolPolicyHost host)
+        {
+            host.SetElementPoolPolicyObject(_elementPoolPolicy);
+        }
+    }
+
+    private void OnUnloaded(object sender, RoutedEventArgs e)
+    {
+        if (_layout is IElementPoolPolicyHost host)
+        {
+            host.ClearElementPoolObject(ElementRemovalReason.ControlUnloaded);
+        }
     }
 
     protected override void OnApplyTemplate()

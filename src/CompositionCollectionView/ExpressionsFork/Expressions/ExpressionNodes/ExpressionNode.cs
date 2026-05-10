@@ -275,6 +275,13 @@ namespace Microsoft.Toolkit.Uwp.UI.Animations.ExpressionsFork
         }
 
         /// <summary>
+        /// Diagnostic-only: the rendered WinComp expression string for this node.
+        /// Used to verify expression-length feasibility before architectural
+        /// changes (e.g. blended layout-mode tweens). Side-effect free.
+        /// </summary>
+        public string ToDiagnosticExpressionString() => ToExpressionString();
+
+        /// <summary>
         /// Clears the reference information.
         /// </summary>
         /// <exception cref="System.Exception">Reference and paramName can't both be null</exception>
