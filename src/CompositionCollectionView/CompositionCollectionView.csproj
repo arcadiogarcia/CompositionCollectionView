@@ -147,6 +147,7 @@
     <Compile Include="CompositionCollectionLayout.Update.cs" />
     <Compile Include="CompositionCollectionView.cs" />
     <Compile Include="DeconstructPolyfillExtensions.cs" />
+    <Compile Include="ElementPooling.cs" />
     <Compile Include="ElementReference.cs" />
     <Compile Include="GlobalUsings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
