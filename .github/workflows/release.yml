@@ -111,34 +111,22 @@ jobs:
           name: nuget-packages
           path: artifacts/*.nupkg
 
-      - name: Push to NuGet.org
-        id: nuget_push
-        continue-on-error: true
-        shell: pwsh
-        run: |
-          $key = "${{ secrets.NUGET_API_KEY }}"
-          if (-not $key) {
-            Write-Warning "NUGET_API_KEY is not set — skipping push. Download packages from workflow artifacts."
-            exit 0
-          }
-          $failed = $false
-          Get-ChildItem artifacts\*.nupkg | ForEach-Object {
-            dotnet nuget push $_.FullName `
-              --api-key $key `
-              --source https://api.nuget.org/v3/index.json `
-              --skip-duplicate
-            if ($LASTEXITCODE -ne 0) { $failed = $true }
-          }
-          if ($failed) { exit 1 }
-
-      - name: Warn on push failure
-        if: steps.nuget_push.outcome == 'failure'
-        shell: pwsh
-        run: |
-          Write-Warning "NuGet push failed (key may be expired). Packages are attached to the GitHub Release and available as workflow artifacts. Update the NUGET_API_KEY secret and re-run this step."
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: artifacts/*.nupkg
+
+      - name: Push to NuGet.org
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $key = "${{ secrets.NUGET_API_KEY }}"
+          if (-not $key) { throw "NUGET_API_KEY secret is not set." }
+          Get-ChildItem artifacts\*.nupkg | ForEach-Object {
+            dotnet nuget push $_.FullName `
+              --api-key $key `
+              --source https://api.nuget.org/v3/index.json `
+              --skip-duplicate
+            if ($LASTEXITCODE -ne 0) { throw "Push failed for $($_.Name)" }
+          }
