@@ -136,10 +136,14 @@ jobs:
           $ErrorActionPreference = 'Stop'
           $key = "${{ secrets.NUGET_API_KEY }}"
           if (-not $key) { throw "NUGET_API_KEY secret is not set." }
+          # NOTE: --skip-duplicate intentionally NOT used. If a previous run
+          # already pushed this version (e.g. from an earlier failed attempt
+          # before a fix landed), we want this push to FAIL LOUDLY so we
+          # know to bump the version. Silent skip + uploaded "good" artifact
+          # caused 0.1.5 to ship with stale (x64-only) compile-time refs.
           Get-ChildItem artifacts\*.nupkg | ForEach-Object {
             dotnet nuget push $_.FullName `
               --api-key $key `
-              --source https://api.nuget.org/v3/index.json `
-              --skip-duplicate
+              --source https://api.nuget.org/v3/index.json
             if ($LASTEXITCODE -ne 0) { throw "Push failed for $($_.Name)" }
           }
