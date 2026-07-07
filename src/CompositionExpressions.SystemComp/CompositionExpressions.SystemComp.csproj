@@ -1,0 +1,76 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    System-composition (.NET 5+) flavor of the CompositionExpressions DSL.
+
+    Root cause it fixes (arcadiogarcia/Combobulate#7): the two shipped assets
+    (uap10.0 = system Windows.UI.Composition but UWP => NETSDK1149 on .NET5+;
+    net10.0-windows = .NET5+ but references LIFTED Microsoft.UI.Composition +
+    WindowsAppSDK) are each missing one of "system composition" AND "consumable
+    from a plain .NET5+ (no WindowsAppSDK) project". This head is BOTH:
+
+      * TargetFramework net10.0-windows  -> plain .NET 5+ consumable (no UWP).
+      * NO Microsoft.WindowsAppSDK, UseWinUI=false, WINAPPSDK NOT defined
+        -> the source's #if !WINAPPSDK branch + this head's GlobalUsings.cs
+           bind the typed AST to the *system* Windows.UI.Composition surface
+           (projected via the Windows SDK targeting pack), exactly as the base
+           UWP head does, but on a modern TFM.
+
+    Distinct AssemblyName (CompositionExpressions.SystemComp) is REQUIRED: a
+    consumer (e.g. Pip) that references BOTH the lifted and system Combobulate
+    flavors would otherwise get two different CompositionExpressions.dll files
+    colliding in its output. Same internal namespaces, different assembly id.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>CompositionExpressions</RootNamespace>
+    <AssemblyName>CompositionExpressions.SystemComp</AssemblyName>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWinUI>false</UseWinUI>
+    <!-- AnyCPU (MSIL) so the nuspec lib\ compile-time reference is arch-neutral,
+         avoiding MSB3270/CS8012 in consumers targeting a different arch. -->
+    <Platforms>AnyCPU;x86;x64;ARM64</Platforms>
+    <RuntimeIdentifiers>win-x86;win-x64;win-arm64</RuntimeIdentifiers>
+    <!-- Deliberately NO WINAPPSDK define here (unlike the WinAppSdk twin). -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PolySharp" Version="1.14.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <!--
+    Same canonical DSL source as the UWP / WinAppSdk twins (single source of
+    truth under ..\CompositionCollectionView\). LiveValueOverride.cs physically
+    lives in the WinAppSdk head's folder; link it here too.
+  -->
+  <ItemGroup>
+    <Compile Include="..\CompositionCollectionView\ExpressionsFork\**\*.cs"
+             Exclude="..\CompositionCollectionView\ExpressionsFork\bin\**;..\CompositionCollectionView\ExpressionsFork\obj\**"
+             LinkBase="ExpressionsFork" />
+    <!-- TrackedInteractionNodes.cs hard-references the LIFTED
+         Microsoft.UI.Composition surface (InteractionTracker helpers that have
+         no system counterpart we ship). Excluded here exactly as the base UWP
+         head excludes it; Combobulate consumes only the ExpressionsFork typed
+         AST, not these InteractionTracker wrappers. -->
+    <Compile Include="..\CompositionCollectionView\AnimatableNodes\**\*.cs"
+             Exclude="..\CompositionCollectionView\AnimatableNodes\bin\**;..\CompositionCollectionView\AnimatableNodes\obj\**;..\CompositionCollectionView\AnimatableNodes\TrackedInteractionNodes.cs"
+             LinkBase="AnimatableNodes" />
+    <Compile Include="..\CompositionCollectionView\BindableCompositionPropertySet.cs"
+             Link="BindableCompositionPropertySet.cs" />
+    <Compile Include="..\CompositionCollectionView\AnimationConstants.cs"
+             Link="AnimationConstants.cs" />
+    <Compile Include="..\CompositionExpressions.WinAppSdk\LiveValueOverride.cs"
+             Link="LiveValueOverride.cs" />
+  </ItemGroup>
+
+</Project>

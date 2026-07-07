@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>arcadiog.CompositionExpressions.SystemComp</id>
+    <version>$version$</version>
+    <authors>Arcadio Garcia</authors>
+    <license type="expression">MIT</license>
+    <projectUrl>https://github.com/arcadiogarcia/CompositionCollectionView</projectUrl>
+    <repository type="git" url="https://github.com/arcadiogarcia/CompositionCollectionView" />
+    <description>System-composition (.NET 5+) flavor of the CompositionExpressions typed C# DSL. Same source as arcadiog.CompositionExpressions, but the typed AST binds to the SYSTEM Windows.UI.Composition surface and takes NO dependency on the Windows App SDK / lifted Microsoft.UI.Composition. Targets net10.0-windows so it is consumable from a plain .NET 5+ project (unlike the uap10.0 asset, which trips NETSDK1149 on .NET 5+). Ships a distinct assembly name (CompositionExpressions.SystemComp) so it can coexist in one app alongside the lifted arcadiog.CompositionExpressions build. Intended for headless / system-compositor hosts (e.g. WS_EX_NOREDIRECTION_BITMAP transparent windows) that need the expression DSL without WinUI.</description>
+    <tags>winui3 winappsdk composition expressions animation system-composition headless</tags>
+    <readme>docs\README.md</readme>
+    <dependencies>
+      <!-- Deliberately NO Microsoft.WindowsAppSDK dependency: this flavor binds
+           to the system Windows.UI.Composition surface projected via the Windows
+           SDK targeting pack. -->
+      <group targetFramework="net10.0-windows10.0.19041.0" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="README.md" target="docs\README.md" />
+
+    <!-- System-composition build – AnyCPU (MSIL) compile + runtime reference.
+         Pure managed; binds to the system Windows.UI.Composition projection with
+         no arch-specific native payload, so a single lib asset serves every RID. -->
+    <file src="src\CompositionExpressions.SystemComp\bin\Release\net10.0-windows10.0.19041.0\CompositionExpressions.SystemComp.dll" target="lib\net10.0-windows10.0.19041.0" />
+    <file src="src\CompositionExpressions.SystemComp\bin\Release\net10.0-windows10.0.19041.0\CompositionExpressions.SystemComp.xml" target="lib\net10.0-windows10.0.19041.0" />
+  </files>
+</package>

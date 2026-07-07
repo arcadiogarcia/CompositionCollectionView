@@ -78,6 +78,23 @@ Attach `CompositionCollectionLayoutBehavior<TId, TItem>` instances to layouts fo
 
 An internal fork of the Windows Community Toolkit's expression animation helpers, with added `Evaluate()` method support.
 
+## CompositionExpressions (standalone expression-DSL packages)
+
+The typed expression-animation DSL (`ExpressionsFork` — `ScalarNode`, `Matrix4x4Node`, `ExpressionFunctions`, `.Evaluate()`, plus the animatable-node wrappers) is also published on its own, so you can compose `CompositionObject` expression animations without taking a dependency on the collection-view control.
+
+Which package you need depends on **two independent axes** — the target-framework era and the composition surface your app renders on:
+
+|                                | System `Windows.UI.Composition`                        | Lifted `Microsoft.UI.Composition`              |
+| ------------------------------ | ------------------------------------------------------ | ---------------------------------------------- |
+| **UWP** (`uap10.0`)            | `arcadiog.CompositionExpressions` *(uap asset)*        | —                                              |
+| **.NET 5+** (`net10.0-windows`) | **`arcadiog.CompositionExpressions.SystemComp`**       | `arcadiog.CompositionExpressions` *(net asset)* |
+
+- **`arcadiog.CompositionExpressions`** — the mainstream package. Ships a UWP asset (system composition, for UWP apps) and a `net10.0-windows` asset that binds to the **lifted** `Microsoft.UI.Composition` and depends on the Windows App SDK. Use it from WinUI 3 / Windows App SDK apps.
+
+- **`arcadiog.CompositionExpressions.SystemComp`** — for **.NET 5+** hosts that render on the **system** compositor (`Windows.UI.Composition` on a `DesktopWindowTarget`), e.g. a transparent per-pixel-alpha window created outside the XAML/WinUI stack. This is the one asset the mainstream package can't provide: its UWP asset trips `NETSDK1149` when consumed from .NET 5+, and its lifted `net10.0-windows` asset is the wrong composition surface and drags in the Windows App SDK.
+
+  It compiles the same DSL source, but with a **distinct assembly name** (`CompositionExpressions.SystemComp`) so a single app can reference **both** flavors at once — e.g. lifted composition for its main WinUI window and system composition for a headless/transparent companion window — without a `CompositionExpressions.dll` output collision.
+
 ## License
 
 MIT
