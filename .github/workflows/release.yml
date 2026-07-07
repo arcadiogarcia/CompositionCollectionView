@@ -62,12 +62,25 @@ jobs:
         shell: pwsh
         run: |
           # dotnet build has .NET 10 but not VS's PRI task DLLs. We just need AppxMSBuildToolsPath.
-          # The MrtCore.PriGen.targets construct: $(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\AppxPackage\
-          # We override AppxMSBuildToolsPath to point directly to VS's copy.
-          $vsPath = "${{ steps.vs.outputs.VS_PATH }}"
-          $msbuildDir = "$vsPath\MSBuild"
-          $vsVerDir = Get-ChildItem "$msbuildDir\Microsoft\VisualStudio" -Directory -Filter "v*" | Select-Object -First 1
-          $appxPath = "$($vsVerDir.FullName)\AppxPackage"
+          # MrtCore.PriGen.targets loads $(AppxMSBuildToolsPath)Microsoft.Build.Packaging.Pri.Tasks.dll.
+          # Runner-image drift (VS17 -> VS18) moves the versioned AppxPackage folder, so we can't
+          # assume the first "v*" dir under MSBuild\Microsoft\VisualStudio holds the task DLL
+          # (VS18's v17.0\AppxPackage exists but is empty). Locate the DLL BY NAME instead, searching
+          # the detected VS install first, then broader well-known roots as a fallback.
+          $ErrorActionPreference = 'Stop'
+          $roots = @(
+            "${{ steps.vs.outputs.VS_PATH }}",
+            "C:\Program Files\Microsoft Visual Studio",
+            "C:\Program Files (x86)\Microsoft Visual Studio"
+          ) | Where-Object { $_ -and (Test-Path $_) } | Select-Object -Unique
+          $dll = $null
+          foreach ($root in $roots) {
+            $dll = Get-ChildItem -Path $root -Recurse -Filter "Microsoft.Build.Packaging.Pri.Tasks.dll" -ErrorAction SilentlyContinue |
+              Select-Object -First 1
+            if ($dll) { break }
+          }
+          if (-not $dll) { throw "Could not locate Microsoft.Build.Packaging.Pri.Tasks.dll under: $($roots -join ', ')" }
+          $appxPath = $dll.Directory.FullName
           Write-Host "AppxMSBuildToolsPath: $appxPath"
           Write-Host "PRI DLL exists: $(Test-Path "$appxPath\Microsoft.Build.Packaging.Pri.Tasks.dll")"
           "APPX_PATH=$appxPath" >> $env:GITHUB_OUTPUT
