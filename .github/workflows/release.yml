@@ -85,6 +85,20 @@ jobs:
             -p:Platform=AnyCPU `
             "-p:AppxMSBuildToolsPath=${{ steps.appx.outputs.APPX_PATH }}\"
 
+      - name: Restore & Build SystemComp DSL library (AnyCPU)
+        shell: pwsh
+        run: |
+          # System-composition (.NET5+) DSL flavor: binds the typed AST to the
+          # system Windows.UI.Composition surface with NO WindowsAppSDK, so it is
+          # consumable from a plain .NET5+ host (fixes arcadiogarcia/Combobulate#7).
+          # SDK-style, no PRI/Appx tasks needed. Ships a single AnyCPU (MSIL) lib
+          # asset — pure managed, no arch-specific native payload.
+          dotnet restore src/CompositionExpressions.SystemComp/CompositionExpressions.SystemComp.csproj -p:Platform=AnyCPU
+          dotnet build src/CompositionExpressions.SystemComp/CompositionExpressions.SystemComp.csproj `
+            -c Release `
+            --no-restore `
+            -p:Platform=AnyCPU
+
       - name: Restore & Build WinAppSdk library (x64)
         shell: pwsh
         run: |
@@ -113,6 +127,10 @@ jobs:
             -Version ${{ steps.version.outputs.VERSION }} `
             -OutputDirectory artifacts
           if ($LASTEXITCODE -ne 0) { throw "nuget pack CompositionExpressions failed" }
+          nuget pack CompositionExpressions.SystemComp.nuspec `
+            -Version ${{ steps.version.outputs.VERSION }} `
+            -OutputDirectory artifacts
+          if ($LASTEXITCODE -ne 0) { throw "nuget pack CompositionExpressions.SystemComp failed" }
           nuget pack CompositionCollectionView.nuspec `
             -Version ${{ steps.version.outputs.VERSION }} `
             -OutputDirectory artifacts
